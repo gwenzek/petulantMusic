@@ -23,7 +23,7 @@ object DataAggregator {
     }
 
     def main(args : Array[String]){
-        aggregate("../PetulantData/Jerusalem", 1, 65)
+        aggregate("jerusalem/img", 1, 65)
     }
 
 }
