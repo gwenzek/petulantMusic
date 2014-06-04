@@ -226,7 +226,7 @@ object NeuralNetwork{
         //        xtl.foreach( xt => visualizeInput(xt._1, width, height) )
         val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
         nn.dumpToFile("layers/layers_0.txt")
-        nn.train(xtl, 200, 10)
+        nn.train(xtl, 200, 0)
         for (i <- 0 until nn.hiddenLayerSize) {
             visualizeHiddenLayer(nn.theta1, width, height, i)
         }

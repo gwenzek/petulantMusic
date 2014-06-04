@@ -8,14 +8,20 @@ import java.io.{FileInputStream, InputStream}
  */
 object DataLoader {
 
+    def loadAsRaw(filename: String, imageName: String, width: Int, height: Int) = {
+        val descriptions = io.Source.fromFile(filename).getLines()
+        val notes = for (description <- descriptions) yield new Note(description)
+        def getVector(n: Note) = imageAsVector(imageName + s"_${n.index}.png", width, height)
+        for (note <- notes) yield (getVector(note), note)
+    }
+
     def load(filename: String, imageName: String,
              width: Int, height: Int,
              noteFilter: Note => Boolean, toInteger: Note => Int) = {
-        val descriptions = io.Source.fromFile(filename).getLines
+        val descriptions = io.Source.fromFile(filename).getLines()
         val notes = (for (description <- descriptions) yield new Note(description)).filter(noteFilter)
 
         def getVector(n: Note) = imageAsVector(imageName + s"_${n.index}.png", width, height)
-
         for (note <- notes) yield (getVector(note), toInteger(note))
     }
 
