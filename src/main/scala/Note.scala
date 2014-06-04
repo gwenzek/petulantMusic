@@ -11,6 +11,7 @@ class Note(description: String) {
         case "noire" => 1
         case "blanche" => 2
         case "ronde" => 3
+        case "2xCroche" => 4
     }
     lazy val isNote = properties("Type") == "Note"
 }
@@ -19,5 +20,5 @@ object Note {
     val propertiesDef = Array("Type", "Note", "Level", "Annotation", "Duration", "Pointed")
     //    val note1 = new Note("1 Cle Sol")
     //    val note2 = Note()
-    val durationClass = 4
+    val durationClass = 5
 }

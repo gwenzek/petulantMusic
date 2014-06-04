@@ -9,7 +9,8 @@ libraryDependencies ++= Seq(
     "org.scalanlp" %% "breeze" % "0.8.1",
     // native libraries are not included by default. add this if you want them (as of 0.7)
     // native libraries greatly improve performance, but increase jar sizes.
-    "org.scalanlp" %% "breeze-natives" % "0.8.1"
+    "org.scalanlp" %% "breeze-natives" % "0.8.1",
+    "org.scalanlp" %% "breeze-viz" % "0.8"
 )
 
 libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-core" % "1.3.21"

@@ -8,13 +8,13 @@ import java.io.{FileInputStream, InputStream}
  */
 object DataLoader {
 
-    def load(filename: String, firstIndex: Int, lastIndex: Int,
+    def load(filename: String, imageName: String,
              width: Int, height: Int,
              noteFilter: Note => Boolean, toInteger: Note => Int) = {
-        val descriptions = io.Source.fromFile(filename + s"_${firstIndex}_$lastIndex.txt").getLines
+        val descriptions = io.Source.fromFile(filename).getLines
         val notes = (for (description <- descriptions) yield new Note(description)).filter(noteFilter)
 
-        def getVector(n: Note) = imageAsVector(filename + s"_${n.index}.png", width, height)
+        def getVector(n: Note) = imageAsVector(imageName + s"_${n.index}.png", width, height)
 
         for (note <- notes) yield (getVector(note), toInteger(note))
     }
@@ -25,8 +25,8 @@ object DataLoader {
         new DenseVector[Int](image.pixels).map(rgbToGrayScale)
     }
 
-    def rgbToGrayScale(r: Int, g: Int, b: Int): Double = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
+    def rgbToGrayScale(r: Int, g: Int, b: Int): Double = 1.0 - (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
 
-    def rgbToGrayScale(rgb: Int): Double = rgbToGrayScale(rgb & 0xFF0000, rgb & 0x00FF00, rgb & 0x0000FF)
+    def rgbToGrayScale(rgb: Int): Double = rgbToGrayScale(rgb & 0xFF0000 >> 16, rgb & 0x00FF00 >> 8, rgb & 0x0000FF)
 }
 
