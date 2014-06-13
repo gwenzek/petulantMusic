@@ -1,10 +1,14 @@
 /**
  * Created by Guillaume on 03/06/2014.
  */
+
+import scala.io.Source
+
+
 class Note(description: String) {
-    private val desc = description.split(" ")
+    private val desc = description.split(";")
     val index = desc(0).toInt
-    val properties: Map[String, String] = Map[String, String]() ++ (for (i <- 1 until desc.length) yield (Note.propertiesDef(i - 1), desc(i)))
+    val properties: Map[String, String] = Map((for (i <- 1 until desc.length) yield (Note.propertiesDef(i - 1), desc(i))):_*)
     lazy val level = properties("Level").toInt
     lazy val duration = properties("Duration") match {
         case "croche" => 0
@@ -14,6 +18,7 @@ class Note(description: String) {
         case "2xCroche" => 4
     }
     lazy val isNote = properties("Type") == "Note"
+    lazy val pointed = properties("Pointed") == "*"
 }
 
 object Note {
@@ -21,4 +26,9 @@ object Note {
     //    val note1 = new Note("1 Cle Sol")
     //    val note2 = Note()
     val durationClass = 5
+    
+    def fromFile(filename: String) = {
+        val lines = Source.fromFile(filename).getLines
+        new Note(lines.next)
+    }
 }

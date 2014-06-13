@@ -12,8 +12,9 @@ class NeuralNetwork(val featureSize: Int,
                     val outputSize: Int,
                     val learningRate: Double = 1.0,
                     regularisationFactor: Double = 0.1) {
-    val theta1 = DenseMatrix.rand[Double](hiddenLayerSize, featureSize + 1, Rand.gaussian(0.0, 0.1))
-    val theta2 = DenseMatrix.rand[Double](outputSize, hiddenLayerSize + 1, Rand.gaussian(0.0, 0.1))
+    
+    val theta1 = NeuralNetwork.initMatrix(hiddenLayerSize, featureSize + 1)
+    val theta2 = NeuralNetwork.initMatrix(outputSize, hiddenLayerSize + 1)
 
     val layers: List[DenseMatrix[Double]] = theta1 :: theta2 :: Nil
 
@@ -208,10 +209,18 @@ object NeuralNetwork{
         f.subplot(0) += image(mat)
     }
 
-    def visualizeInput(x: DenseVector[Double], width: Int, height: Int) {
+    def visualizeInput(f: Figure, x: DenseVector[Double], width: Int, height: Int) {
         val mat = new DenseMatrix(width, height, x.data)
-        val f = Figure()
         f.subplot(0) += image(mat)
+    }
+
+    def initMatrix(rows: Int, cols: Int) : DenseMatrix[Double] = {
+        val r = math.sqrt(6) / math.sqrt(rows * cols)
+        DenseMatrix.rand[Double](rows, cols, uniform(r))
+    }
+
+    def uniform(range: Double): Rand[Double] = new Rand[Double] {
+        def draw = (Rand.uniform.draw * 2 - 1) * range
     }
 
     def main(args: Array[String]){
@@ -219,18 +228,17 @@ object NeuralNetwork{
         println("main")
         val width = 20
         val height = 70
-        val hidden = 10
+        val hidden = 15
         val firstLine = 20
         val lastLine = 50
-        val xtl = DataLoader.load("data/description.txt", "data/img",
+        val xtl = DataLoader.load("data",
             width, height, firstLine, lastLine,
             _.isNote, _.duration).filter(_._1.length == width*height).toList
         // xtl.foreach(xt => print(s"${xt._2} "))
         // println()
-        //        xtl.foreach( xt => visualizeInput(xt._1, width, height) )
         val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
         nn.dumpToFile("layers/layers_0.txt")
-        nn.train(xtl, 200, 1)
+        nn.train(xtl, 200, 10)
         for (i <- 0 until nn.hiddenLayerSize) {
             visualizeHiddenLayer(nn.theta1, width, height, i)
         }

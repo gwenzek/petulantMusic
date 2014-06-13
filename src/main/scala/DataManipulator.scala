@@ -52,8 +52,8 @@ object DataManipulator {
     def mergeDirectories(directories: Iterable[String], outputFileName: String) = {
         var i_output = 1
         for (dir <- directories) {
-            for (file <- dir.list().filter(_.endsWith(".png"))) {
-                copyImgAndTxt(file, outputFileName, i_output)
+            for (file <- listImages(dir)) {
+                copyImgAndTxt(dir+'/'+file, outputFileName, i_output)
                 i_output += 1
             }
         }
@@ -62,11 +62,13 @@ object DataManipulator {
         i_output
     }
 
+    def listImages(dir: String) = dir.list().filter(_.endsWith(".png")).toIterator
+    def listImagesDescriptions(dir: String) = for(img <- listImages(dir)) yield (img, getTxt(img))
 
     def main(args : Array[String]){
         "duration/description.txt" <<| aggregate("duration")
-        //        val iMax = mergeFolders(Array("jerusalem/img", "croches/img"), "data/croche")
-        //        aggregate("data/croche", 1, iMax)
+        val iMax = mergeDirectories(Array("jerusalem", "duration"), "data/img")
+        // aggregate("data/croche", 1, iMax)
     }
 
 }
