@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="PreviewWindow">
+  <grid id="27dc6" binding="previewWindow" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="635" height="439"/>
+    </constraints>
+    <properties>
+      <minimumSize width="250" height="250"/>
+    </properties>
+    <border type="none"/>
+    <children>
+      <toolbar id="c1956">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="20"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="e4577" class="javax.swing.JTextArea" binding="imageNameTextArea">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="76250" class="javax.swing.JButton" binding="loadButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Load"/>
+            </properties>
+          </component>
+          <component id="aacba" class="javax.swing.JButton" binding="runButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Run"/>
+            </properties>
+          </component>
+        </children>
+      </toolbar>
+      <component id="69441" class="ImagePanel" binding="imagePanel">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <toolbar id="9d386">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+            <preferred-size width="-1" height="20"/>
+          </grid>
+        </constraints>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <component id="70d35" class="javax.swing.JComboBox" binding="typeComboBox">
+            <constraints/>
+            <properties>
+              <model>
+                <item value="Note"/>
+                <item value="Cle"/>
+                <item value="Silence"/>
+                <item value="Annotation"/>
+              </model>
+            </properties>
+          </component>
+          <component id="df000" class="javax.swing.JComboBox" binding="noteComboBox1">
+            <constraints/>
+            <properties>
+              <model>
+                <item value="Do"/>
+                <item value="Re"/>
+                <item value="Mi"/>
+                <item value="Fa"/>
+                <item value="Sol"/>
+                <item value="La"/>
+                <item value="Si"/>
+              </model>
+            </properties>
+          </component>
+          <component id="df61b" class="javax.swing.JSpinner" binding="levelSpinner">
+            <constraints/>
+            <properties/>
+          </component>
+          <component id="bc009" class="javax.swing.JComboBox" binding="noteComboBox2">
+            <constraints/>
+            <properties>
+              <maximumSize width="150" height="500"/>
+              <model>
+                <item value="normal"/>
+                <item value="#"/>
+                <item value="b"/>
+                <item value="\u266E" />
+              </model>
+            </properties>
+          </component>
+          <component id="cd26b" class="javax.swing.JComboBox" binding="durationComboBox">
+            <constraints/>
+            <properties>
+              <enabled value="true"/>
+              <model>
+                <item value="ronde"/>
+                <item value="blanche"/>
+                <item value="noire"/>
+                <item value="croche"/>
+                <item value="2xCroche"/>
+                <item value="3xCroche"/>
+              </model>
+            </properties>
+          </component>
+          <component id="324d8" class="javax.swing.JCheckBox" binding="pointedCheckBox">
+            <constraints/>
+            <properties>
+              <text value="pointee"/>
+            </properties>
+          </component>
+          <component id="db057" class="javax.swing.JFormattedTextField" binding="fileNumberTextField">
+            <constraints/>
+            <properties>
+              <horizontalAlignment value="4"/>
+              <maximumSize width="500" height="2147483647"/>
+              <minimumSize width="150" height="19"/>
+              <text value="file number"/>
+              <toolTipText value="file number"/>
+            </properties>
+          </component>
+          <component id="7266f" class="javax.swing.JButton" binding="okButton" default-binding="true">
+            <constraints/>
+            <properties>
+              <text value="Ok"/>
+            </properties>
+          </component>
+        </children>
+      </toolbar>
+      <component id="20c66" class="javax.swing.JLabel" binding="infoLabel">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <text value="Label"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>

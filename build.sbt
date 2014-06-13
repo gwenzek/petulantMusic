@@ -16,3 +16,5 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-core" % "1.3.21"
 
 libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-filters" % "1.3.21"
+
+libraryDependencies += "com.intellij" % "forms_rt" % "6.0.5"
