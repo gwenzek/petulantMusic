@@ -181,7 +181,7 @@ class NeuralNetwork(val featureSize: Int,
                 println(s"Accuracy : ${accuracy(xtl)}")
                 println("Confusion matrix:")
                 println(confusionMatrix(xtl))
-                dumpToFile(s"layers_$i.txt")
+                dumpToFile(s"layers/layers_$i.txt")
             }
         }
         dumpToFile(s"layers_$niter.txt")
@@ -218,15 +218,19 @@ object NeuralNetwork{
         //        test
         println("main")
         val width = 20
-        val height = 50
+        val height = 70
         val hidden = 10
-        val xtl = DataLoader.load("data/croche_1_100.txt", "data/croche", width, height, _.isNote, _.duration).toList
-        xtl.foreach(xt => print(s"${xt._2} "))
-        println()
+        val firstLine = 20
+        val lastLine = 50
+        val xtl = DataLoader.load("data/description.txt", "data/img",
+            width, height, firstLine, lastLine,
+            _.isNote, _.duration).filter(_._1.length == width*height).toList
+        // xtl.foreach(xt => print(s"${xt._2} "))
+        // println()
         //        xtl.foreach( xt => visualizeInput(xt._1, width, height) )
         val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
         nn.dumpToFile("layers/layers_0.txt")
-        nn.train(xtl, 200, 0)
+        nn.train(xtl, 200, 1)
         for (i <- 0 until nn.hiddenLayerSize) {
             visualizeHiddenLayer(nn.theta1, width, height, i)
         }
