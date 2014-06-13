@@ -3,7 +3,7 @@ import breeze.linalg.{DenseVector, DenseMatrix}
 import java.io.{FileInputStream, InputStream}
 import breeze.plot._
 import ImplicitMatrixConversion.{imageToMatrix, matrixToBinary, imageToBinary}
-
+import scala.language.implicitConversions
 
 class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
 
@@ -78,10 +78,6 @@ class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
 }
 
 object BinaryImage{
-
-    def rgbToGrayScale(r: Int, g: Int, b: Int): Double = 1.0 - (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
-
-    def rgbToGrayScale(rgb: Int): Double = rgbToGrayScale(rgb & 0xFF0000 >> 16, rgb & 0x00FF00 >> 8, rgb & 0x0000FF)
 
     implicit def binaryToMatrix(binary: BinaryImage): DenseMatrix[Int] = binary.data
     // implicit def matrixToBinary(matrix: DenseMatrix[Int]): BinaryImage = new BinaryImage(matrix)

@@ -131,6 +131,7 @@ class NeuralNetwork(
 
     private def propagation(x: DenseVector[Double], t: Int) = {
         //        println("propagation")
+        // val a1 = activation(x)
         val a1 = x
         //        println(s"a1: ${a1.size}")
         val z2 = apply1(a1)
@@ -168,9 +169,9 @@ class NeuralNetwork(
             n_examples += 1
         }
         delta1 :*= 1.0 / n_examples
-        //        delta1(::, 0 to -2) += (theta1(::, 0 to -2) * (regularisationFactor / theta1.size))
+        delta1(::, 0 to -2) += (theta1(::, 0 to -2) * (regularisationFactor / theta1.size))
         delta2 :*= 1.0 / n_examples
-        //        delta2(::, 0 to -2) += (theta2(::, 0 to -2) * (regularisationFactor / theta2.size))
+        delta2(::, 0 to -2) += (theta2(::, 0 to -2) * (regularisationFactor / theta2.size))
         theta1 :-= delta1 * learningRate
         theta2 :-= delta2 * learningRate
     }
@@ -254,8 +255,8 @@ object NeuralNetwork{
 
     def main(args: Array[String]){
         println("main")
-        // test_train
-        // val nn = fromFile("layers/layers_200.txt")
+        test_train
+        val nn = fromFile("layers/layers_200.txt")
     }
 
     def test_train {
@@ -272,7 +273,7 @@ object NeuralNetwork{
         val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
         nn.dumpToFile("layers/layers_0.txt")
         nn.train(xtl, 200, 10)
-        // for (i <- 0 until nn.hiddenLayerSize) {
+        // for (i <- 0 until nn.theta1.rows) {
         //     visualizeHiddenLayer(nn.theta1, width, height, i)
         // }
     }
