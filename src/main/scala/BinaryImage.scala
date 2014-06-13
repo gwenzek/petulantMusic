@@ -39,6 +39,32 @@ class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
         f.subplot(slot) += image(data.map(_.toDouble))
     }
 
+
+    // def clipAndPad(width: Int, height: Int, firstLine: Int, lastLine: Int) : DenseMatrix[Double] = {
+    //     val img = Image(new FileInputStream(filename))
+    //     val xys = img.findLines().toList
+    //     if(xys.isEmpty) return img scaleTo(width, height, Bicubic)
+    //     var first : Int = xys.head._2
+    //     val last : Int = xys.last._2
+    //     val a : Double = (firstLine - lastLine).toDouble / (first - last)
+    //     var shrinked : DenseMatrix[Double] = img scaleTo(width, (img.height.toDouble*a).toInt, Bicubic)
+    //     // first -> a*first
+    //     first = (a*first).toInt
+    //     val leftCols = firstLine - first
+    //     val rightCols = height - shrinked.cols - leftCols
+    //     if (leftCols > 0){
+    //         shrinked = pad(shrinked, 0, 0, leftCols, 0)
+    //     } else if (leftCols < 0) {
+    //         shrinked = crop(shrinked, 0, 0, -leftCols, 0)
+    //     }
+    //     if (rightCols > 0){
+    //         shrinked = pad(shrinked, 0, 0, 0, rightCols)
+    //     } else if (rightCols < 0) {
+    //         shrinked = crop(shrinked, 0, 0, 0, -rightCols)
+    //     }
+    //     return shrinked
+    // }
+
     def printMatrix(){
         for(i <- 0 until this.rows){
             for(j <- 0 until this.cols){

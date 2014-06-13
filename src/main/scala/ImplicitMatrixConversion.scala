@@ -1,5 +1,7 @@
 import breeze.linalg.{DenseVector, DenseMatrix}
 import com.sksamuel.scrimage.Image
+import scala.language.implicitConversions
+
 
 object ImplicitMatrixConversion{
 

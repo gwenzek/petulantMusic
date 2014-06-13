@@ -2,21 +2,25 @@ import breeze.generic.{MappingUFunc, UFunc}
 import breeze.linalg._
 import breeze.stats.distributions.Rand
 import breeze.plot._
-import java.io.FileWriter
+import java.io.{FileWriter, FileReader}
+import java.util.Scanner
 
 /**
  * Created by guillaume on 26/05/14.
  */
-class NeuralNetwork(val featureSize: Int,
-                    val hiddenLayerSize: Int,
-                    val outputSize: Int,
-                    val learningRate: Double = 1.0,
-                    regularisationFactor: Double = 0.1) {
-    
-    val theta1 = NeuralNetwork.initMatrix(hiddenLayerSize, featureSize + 1)
-    val theta2 = NeuralNetwork.initMatrix(outputSize, hiddenLayerSize + 1)
+class NeuralNetwork(
+        val layers: List[DenseMatrix[Double]], 
+        val learningRate: Double = 1.0,
+        val regularisationFactor: Double = 0.1){
 
-    val layers: List[DenseMatrix[Double]] = theta1 :: theta2 :: Nil
+    val theta1 = layers(0)
+    val theta2 = layers(1) 
+    val outputSize = theta2.rows
+
+    def this(featureSize: Int, hiddenLayerSize: Int, outputSize: Int) = {
+        this(List(NeuralNetwork.initMatrix(hiddenLayerSize, featureSize + 1), 
+                  NeuralNetwork.initMatrix(outputSize, hiddenLayerSize + 1)))
+    }
 
     def activation(xi: Double) = 1.0 / (1.0 + math.exp(-xi))
 
@@ -142,12 +146,12 @@ class NeuralNetwork(val featureSize: Int,
         val d2: DenseVector[Double] = backPropagate(d3, z2, theta2)
         //        println(s"d2: ${d2.size}")
 
-        val delta1 = DenseMatrix.zeros[Double](hiddenLayerSize, featureSize + 1)
+        val delta1 = DenseMatrix.zeros[Double](theta1.rows, theta1.cols)
         //        println("delta1: " + matrixShape(delta1))
         //        println("d2 * a1.t: " + matrixShape(d2 * a1.t))
         delta1(::, 0 to -2) := d2 * a1.t
         delta1(::, -1) := d2
-        val delta2 = DenseMatrix.zeros[Double](outputSize, hiddenLayerSize + 1)
+        val delta2 = DenseMatrix.zeros[Double](theta2.rows, theta2.cols)
         delta2(::, 0 to -2) := d3 * a2.t
         delta2(::, -1) := d3
         (delta1, delta2)
@@ -155,8 +159,8 @@ class NeuralNetwork(val featureSize: Int,
 
     def propagation(xtl: Iterable[(DenseVector[Double], Int)]): Unit = {
         var n_examples = 0
-        val delta1 = DenseMatrix.zeros[Double](hiddenLayerSize, featureSize + 1)
-        val delta2 = DenseMatrix.zeros[Double](outputSize, hiddenLayerSize + 1)
+        val delta1 = DenseMatrix.zeros[Double](theta1.rows, theta1.cols)
+        val delta2 = DenseMatrix.zeros[Double](theta2.rows, theta2.cols)
         for ((x, t) <- xtl) {
             val d1d2 = propagation(x, t)
             delta1 += d1d2._1
@@ -185,14 +189,19 @@ class NeuralNetwork(val featureSize: Int,
                 dumpToFile(s"layers/layers_$i.txt")
             }
         }
-        dumpToFile(s"layers_$niter.txt")
+        dumpToFile(s"layers/layers_$niter.txt")
     }
-
-    def dumpToFile(filename: String) {
+    
+    def dumpToFile(filename: String){
         val output = new FileWriter(filename)
         for (theta <- layers) {
             output.write(s"Layer ${theta.rows} ${theta.cols}\n")
-            output.write(theta.toString)
+            for(i <- 0 until theta.rows){
+                for(j <- 0 until theta.cols){
+                    output.write(s"${theta(i, j)} ")
+                }
+                output.write("\n")
+            }
         }
         output.close()
         println("Neural network saved to : " + filename)
@@ -216,16 +225,40 @@ object NeuralNetwork{
 
     def initMatrix(rows: Int, cols: Int) : DenseMatrix[Double] = {
         val r = math.sqrt(6) / math.sqrt(rows * cols)
-        DenseMatrix.rand[Double](rows, cols, uniform(r))
+        val uniform = new Rand[Double] { def draw = (Rand.uniform.draw * 2 - 1) * r }
+        DenseMatrix.rand[Double](rows, cols, uniform)
     }
 
-    def uniform(range: Double): Rand[Double] = new Rand[Double] {
-        def draw = (Rand.uniform.draw * 2 - 1) * range
+    def fromFile(filename: String) {
+        val input = new Scanner(new FileReader(filename))
+
+        val yieldLayers = new Iterator[DenseMatrix[Double]]{
+            def hasNext = input.hasNext
+            def next() = {
+                val line = input.nextLine
+                println(line)
+                val dim = line.split(" ")
+                val rows = dim(1).toInt
+                val cols = dim(2).toInt
+                val theta = new Array[Double](rows * cols)
+                for(i <- 0 until rows; j <- 0 until cols){
+                    theta(i*cols + j) = input.nextDouble
+                }
+                input.nextLine
+                new DenseMatrix[Double](rows, cols, theta)
+            }
+        }
+        new NeuralNetwork(yieldLayers.toList)
     }
+    
 
     def main(args: Array[String]){
-        //        test
         println("main")
+        // test_train
+        // val nn = fromFile("layers/layers_200.txt")
+    }
+
+    def test_train {
         val width = 20
         val height = 70
         val hidden = 15
@@ -239,10 +272,9 @@ object NeuralNetwork{
         val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
         nn.dumpToFile("layers/layers_0.txt")
         nn.train(xtl, 200, 10)
-        for (i <- 0 until nn.hiddenLayerSize) {
-            visualizeHiddenLayer(nn.theta1, width, height, i)
-        }
-
+        // for (i <- 0 until nn.hiddenLayerSize) {
+        //     visualizeHiddenLayer(nn.theta1, width, height, i)
+        // }
     }
 
     def test {
