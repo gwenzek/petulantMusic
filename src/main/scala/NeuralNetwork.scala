@@ -22,20 +22,7 @@ class NeuralNetwork(
                   NeuralNetwork.initMatrix(outputSize, hiddenLayerSize + 1)))
     }
 
-    def activation(xi: Double) = 1.0 / (1.0 + math.exp(-xi))
-
-    def activation(x: DenseVector[Double]): DenseVector[Double] = x.map(activation)
-
-    def activationAndDerivative(xi: Double) = {
-        val axi: Double = activation(xi)
-        (axi, axi * (1.0 - axi))
-    }
-
-    def activationAndDerivative(x: DenseVector[Double]): DenseVector[(Double, Double)] = x.map(activationAndDerivative)
-
-    def derivative(x : DenseVector[Double]) = {
-        x.map({ xi: Double => activationAndDerivative(xi)._2})
-    }
+    val activation = ActivationFunction.tanh
 
     //    val regularisationCost = new DiffFunction[DenseMatrix[Double]]{
     //        def calculate(theta : DenseMatrix[Double]) = {
@@ -101,7 +88,7 @@ class NeuralNetwork(
     def getPredictedClass(x: DenseVector[Double]) = argmax(getPrediction(x))
 
     def backPropagate(error: DenseVector[Double], z: DenseVector[Double], theta: DenseMatrix[Double]) = {
-        (theta(::, 0 to -2).t * error) :* derivative(z)
+        (theta(::, 0 to -2).t * error) :* activation.d(z)
     }
 
     def forwardPropagate(a1: DenseVector[Double], theta1: DenseMatrix[Double]) = {
