@@ -1,8 +1,11 @@
-import com.sksamuel.scrimage.Image
-import breeze.linalg.{DenseVector, DenseMatrix}
-import java.io.{FileInputStream, InputStream}
+package pipeline
+
+import breeze.linalg.DenseMatrix
 import breeze.plot._
-import ImplicitMatrixConversion.{imageToMatrix, matrixToBinary, imageToBinary}
+import com.sksamuel.scrimage.Image
+import com.sksamuel.scrimage.ScaleMethod.Bicubic
+import impl.MatrixConversion.{binaryToMatrix, imageToBinary, imageToMatrix}
+
 import scala.language.implicitConversions
 
 class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
@@ -39,32 +42,6 @@ class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
         f.subplot(slot) += image(data.map(_.toDouble))
     }
 
-
-    // def clipAndPad(width: Int, height: Int, firstLine: Int, lastLine: Int) : DenseMatrix[Double] = {
-    //     val img = Image(new FileInputStream(filename))
-    //     val xys = img.findLines().toList
-    //     if(xys.isEmpty) return img scaleTo(width, height, Bicubic)
-    //     var first : Int = xys.head._2
-    //     val last : Int = xys.last._2
-    //     val a : Double = (firstLine - lastLine).toDouble / (first - last)
-    //     var shrinked : DenseMatrix[Double] = img scaleTo(width, (img.height.toDouble*a).toInt, Bicubic)
-    //     // first -> a*first
-    //     first = (a*first).toInt
-    //     val leftCols = firstLine - first
-    //     val rightCols = height - shrinked.cols - leftCols
-    //     if (leftCols > 0){
-    //         shrinked = pad(shrinked, 0, 0, leftCols, 0)
-    //     } else if (leftCols < 0) {
-    //         shrinked = crop(shrinked, 0, 0, -leftCols, 0)
-    //     }
-    //     if (rightCols > 0){
-    //         shrinked = pad(shrinked, 0, 0, 0, rightCols)
-    //     } else if (rightCols < 0) {
-    //         shrinked = crop(shrinked, 0, 0, 0, -rightCols)
-    //     }
-    //     return shrinked
-    // }
-
     def printMatrix(){
         for(i <- 0 until this.rows){
             for(j <- 0 until this.cols){
@@ -79,8 +56,7 @@ class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
 
 object BinaryImage{
 
-    implicit def binaryToMatrix(binary: BinaryImage): DenseMatrix[Int] = binary.data
-    // implicit def matrixToBinary(matrix: DenseMatrix[Int]): BinaryImage = new BinaryImage(matrix)
+    
 
     def linePattern(rows: Int) = new BinaryImage(DenseMatrix.ones[Int](rows, 1))
 
@@ -106,8 +82,43 @@ object BinaryImage{
     def test_loadAndPad(){
         val filename = "jerusalem/img_3.png"
         val original = DataLoader.loadImage(filename)
-        val cliped = DataLoader.loadImageClipAndPad(filename, 20, 70, 20, 50)
+        val clipped = DataLoader.loadImageClipAndPad(filename, 20, 70, 20, 50)
         figure.subplot(0) += image(original)
-        figure.subplot(1) += image(cliped)
+        figure.subplot(1) += image(clipped)
     }
+
+    def padTo(img: Image, left: Int, top: Int, right: Int, bottom: Int): Image = {
+        val w = img.width + left + right
+        val h = img.height + top + bottom
+        val filled = Image.filled(w, h, 0xFFFFFF)
+        val g = filled.awt.getGraphics
+        g.drawImage(img.awt, left, top, null)
+        g.dispose()
+        filled
+    }
+
+    def centerOnLines(img: Image, width: Int, height: Int, firstLine: Int, lastLine: Int) : Image = {
+        val xys = img.findLines().toList
+        if(xys.length < 2) return img scaleTo(width, height, Bicubic)
+        var first : Int = xys.head._2
+        val last : Int = xys.last._2
+        val a : Double = (firstLine - lastLine).toDouble / (first - last)
+        var shrinked : Image = img scaleTo(width, (img.height.toDouble*a).toInt, Bicubic)
+        // first -> a*first
+        first = (a*first).toInt
+        val leftCols = firstLine - first
+        val rightCols = height - shrinked.width - leftCols
+        if (leftCols > 0){
+            shrinked = padTo(shrinked, leftCols, 0, 0, 0)
+        } else if (leftCols < 0) {
+            shrinked = shrinked.trim(-leftCols, 0, 0, 0)
+        }
+        if (rightCols > 0){
+            shrinked = padTo(shrinked, 0, 0, rightCols, 0)
+        } else if (rightCols < 0) {
+            shrinked = shrinked.trim(0, 0, -rightCols, 0)
+        }
+        return shrinked
+    }
+
 }

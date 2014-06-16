@@ -10,9 +10,9 @@ libraryDependencies ++= Seq(
     "org.scalanlp" %% "breeze-viz" % "0.8"
 )
 
-libraryDependencies ++= Seq("com.sksamuel.scrimage" %% "scrimage-core" % "1.3.21",
-    "com.sksamuel.scrimage" %% "scrimage-filters" % "1.3.21"
-)
+libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-core" % "1.3.21"
+
+libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-filters" % "1.3.21" changing()
 
 libraryDependencies += "com.intellij" % "forms_rt" % "6.0.5"
 

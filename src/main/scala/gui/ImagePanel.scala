@@ -3,11 +3,13 @@ import java.awt.image.BufferedImage
 import java.awt.{Graphics, Dimension, Color}
 import java.io.{FileWriter, IOException, File}
 import javax.imageio.ImageIO
-import javax.swing.{JLabel, BorderFactory, JPanel}
+import javax.swing.{JLabel, BorderFactory, JPanel, JScrollPane}
 /**
  * Created by guillaume on 21/05/14.
  */
-class ImagePanel extends JPanel{
+class ImagePanel(val selectionDone: () => Unit) extends JPanel{
+
+    def this() = this( () => () )
 
     setBorder(BorderFactory.createLineBorder(Color.BLACK))
     setBackground(Color.PINK)
@@ -26,7 +28,10 @@ class ImagePanel extends JPanel{
 
     addMouseListener(new MouseAdapter() {
         override def mousePressed(e : MouseEvent) = updateFixedCorner(e.getX, e.getY)
-        override def mouseReleased(e : MouseEvent) = updateMovingCorner(e.getX, e.getY)
+        override def mouseReleased(e : MouseEvent) = {
+            updateMovingCorner(e.getX, e.getY)
+            selectionDone()
+        }
     })
 
     addMouseMotionListener(new MouseAdapter() {
@@ -71,7 +76,7 @@ class ImagePanel extends JPanel{
             image = ImageIO.read(imageFile)
             imageLoaded = true
             printMessage("Image loaded")
-            this.setPreferredSize(new Dimension(image.getWidth, image.getHeight))
+            this.setSize(new Dimension(image.getWidth, image.getHeight))
             this.repaint()
         } catch {
             case e : IOException => printMessage(s"Loading ${imageFile.getName} failed")

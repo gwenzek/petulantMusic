@@ -1,7 +1,8 @@
+package pipeline
+
 import java.io._
 import java.util.Scanner
 import scala.language.implicitConversions
-import scala.collection.JavaConversions._
 
 /**
  * Created by guillaume on 26/05/14.

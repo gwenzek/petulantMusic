@@ -1,13 +1,17 @@
+package impl
+
 import breeze.linalg.{DenseVector, DenseMatrix}
 import com.sksamuel.scrimage.Image
 import scala.language.implicitConversions
+import pipeline.BinaryImage
 
-
-object ImplicitMatrixConversion{
+object MatrixConversion{
 
     implicit def matrixToBinary(matrix: DenseMatrix[Double]): BinaryImage = 
         new BinaryImage(matrix.map((x: Double) => if(x > 0.5) 1 else 0))
     
+    implicit def binaryToMatrix(binary: BinaryImage): DenseMatrix[Int] = binary.data
+
     implicit def imageToMatrix(img: Image): DenseMatrix[Double] = {
         new DenseMatrix[Int](img.width, img.height, img.pixels).map(rgbToGrayScale)
     }

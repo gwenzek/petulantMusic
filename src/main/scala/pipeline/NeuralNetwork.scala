@@ -1,3 +1,5 @@
+package pipeline
+
 import breeze.generic.{MappingUFunc, UFunc}
 import breeze.linalg._
 import breeze.stats.distributions.Rand
@@ -22,7 +24,7 @@ class NeuralNetwork(
                   NeuralNetwork.initMatrix(outputSize, hiddenLayerSize + 1)))
     }
 
-    val activation = ActivationFunction.tanh
+    val activation = ActivationFunction.sigmoid
 
     //    val regularisationCost = new DiffFunction[DenseMatrix[Double]]{
     //        def calculate(theta : DenseMatrix[Double]) = {
