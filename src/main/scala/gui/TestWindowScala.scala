@@ -5,7 +5,7 @@ import javax.swing._
 import com.intellij.uiDesigner.core.{GridConstraints, GridLayoutManager}
 import com.sksamuel.scrimage.Image
 import impl.ListenerConversion.performedToListener
-import pipeline.BinaryImage
+import core.BinaryImage
 
 /**
  * Created by guillaume on 14/06/14.

@@ -1,4 +1,4 @@
-package pipeline
+package core
 
 import breeze.linalg.DenseMatrix
 import breeze.plot._

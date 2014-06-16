@@ -1,4 +1,4 @@
-package pipeline
+package core
 
 import java.io._
 import java.util.Scanner

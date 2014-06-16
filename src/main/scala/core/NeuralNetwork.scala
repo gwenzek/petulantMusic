@@ -1,4 +1,4 @@
-package pipeline
+package core
 
 import breeze.generic.{MappingUFunc, UFunc}
 import breeze.linalg._

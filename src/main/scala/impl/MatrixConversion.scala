@@ -3,7 +3,7 @@ package impl
 import breeze.linalg.{DenseVector, DenseMatrix}
 import com.sksamuel.scrimage.Image
 import scala.language.implicitConversions
-import pipeline.BinaryImage
+import core.BinaryImage
 
 object MatrixConversion{
 
