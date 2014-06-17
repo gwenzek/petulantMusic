@@ -19,21 +19,24 @@ object TestWindowScala extends App {
     val testWindow = new JPanel
     testWindow.setLayout(gridLayout(2, 2))
 
-    // val pipeline = Pipeline.fromFile("layers/note_200.txt", "layers/duration_200.txt")
-    val pipeline = Pipeline.empty
+    val pipeline = Pipeline.fromFile("layers/note_80.txt", "layers/duration_190.txt")
+    // val pipeline = Pipeline.empty
 
     private val panel1: JPanel = new JPanel
     panel1.setLayout(gridLayout(2, 1))
     testWindow.add(panel1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false))
     
     private val zoomLabel = new JLabel
+    val zoomWidth = 60
+    val zoomHeight = 210
     zoomLabel.setText("zoom")
     zoomLabel.setBackground(new Color(0xFF0000))
     zoomLabel.setLayout(gridLayout(1, 1))
+    zoomLabel.setSize(zoomWidth, zoomHeight)
     panel1.add(zoomLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, 1, 1, null, null, null, 0, false))
     
     private val panel2: JPanel = new JPanel
-    panel2.setLayout(gridLayout(3, 2))
+    panel2.setLayout(gridLayout(4, 2))
     panel1.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_CAN_SHRINK, null, null, null, 0, false))
     
     val durationComboBox = new JComboBox[String](Note.durationDescription)
@@ -42,6 +45,9 @@ object TestWindowScala extends App {
     val fileNumberField = new JFormattedTextField
     panel2.add(fileNumberField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false))
     
+    val typeComboBox = new JComboBox[String](Note.catDescription)
+    panel2.add(typeComboBox, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+
     private val label1: JLabel = new JLabel
     label1.setText("Duration")
     panel2.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
@@ -53,11 +59,11 @@ object TestWindowScala extends App {
     val OKButton = new JButton
     OKButton.setText("OK")
     OKButton.addActionListener((e: ActionEvent) => accept)
-    panel2.add(OKButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+    panel2.add(OKButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
     
     private val panel3: JPanel = new JPanel
     panel3.setLayout(gridLayout(1, 1))
-    testWindow.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(356, 24), null, 0, false))
+    testWindow.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(400, 400), null, 0, false))
     
     val imagePanel = new ImagePanel(selectNote)
     private val imageScrollPane = new JScrollPane(imagePanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS)
@@ -108,17 +114,24 @@ object TestWindowScala extends App {
 
     def selectNote() : Unit = {
         val selected = imagePanel.getSelectedImage
-        val yImg = pipeline.getPrediction(selected)
-        zoomLabel.setIcon(new ImageIcon(yImg._2))
-        zoomLabel.setText(Note.durationDescription(yImg._1))
+        val y = pipeline.getPrediction(selected)
+        zoomLabel.setIcon(new ImageIcon(pipeline.getCurrentImage(zoomWidth, zoomHeight)))
+        
+        y match {
+            case None => zoomLabel.setText("Rejected")
+            case Some(label) => 
+                zoomLabel.setText(Note.durationDescription(label))
+                durationComboBox.setSelectedIndex(label)
+                durationComboBox.repaint()
+        }
         zoomLabel.repaint()
-        durationComboBox.setSelectedIndex(yImg._1)
-        durationComboBox.repaint()
     }
 
     def accept() : Unit = {
+        val note = Note.partial((Note.CAT, typeComboBox.getSelectedItem.toString), 
+                                (Note.DURATION, durationComboBox.getSelectedItem.toString))
         val message = {
-            try { pipeline.accept(durationComboBox.getSelectedIndex); "saved"
+            try { pipeline.accept(note); "saved"
             } catch {
               case e: IOException => "saving failed"
             }

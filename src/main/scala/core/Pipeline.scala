@@ -7,21 +7,21 @@ import breeze.linalg.{DenseVector, DenseMatrix}
 import impl.MatrixConversion.imageToMatrix
 import impl.EasyIO.{WriteAndClose, FileAsInt}
 
-class Pipeline(val catNN: NeuralNetwork, val durationNN: NeuralNetwork) {
+class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
     val width = Pipeline.width
     val height = Pipeline.height
     private val firstLine = Pipeline.firstLine
     private val lastLine = Pipeline.lastLine
-    private var img: Option[Image] = None
+    private var img: Image = null
 
-    val trainingDirs = List("data")
+    val trainingDirs = List("data", "nothing")
     val outputDir = "collected"
     val counter = outputDir + '/' + "counter.txt"
     private var index: Int = counter.readAsInt
 
     def train(){
-        val categories = load(outputDir :: trainingDirs, (n: Note) => true, _.cat).toList
-        catNN.train(categories, 200, 10, (x: Int) => s"layers/note_$x.txt")
+        val categories = load(outputDir :: trainingDirs, (n: Note) => true, _.isSomething).toList
+        somethingNN.train(categories, 100, 10, (x: Int) => s"layers/note_$x.txt")
         val durations = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
         durationNN.train(durations, 200, 10, (x: Int) => s"layers/duration_$x.txt")
     }
@@ -29,10 +29,13 @@ class Pipeline(val catNN: NeuralNetwork, val durationNN: NeuralNetwork) {
     def getPrediction(buff: BufferedImage) = {
         val centered: Image = BinaryImage.centerOnLines(Image(buff), width, height, firstLine, lastLine)
         val x = castToVector(centered)
-        val y = durationNN.getPredictedClass(x)
-        img = Some(centered)
-        (y, centered.awt)
+        img = centered
+        val isSomething = somethingNN.getPredictedClass(x) > 0
+        if(isSomething) Some(durationNN.getPredictedClass(x))
+        else None
     }
+
+    def getCurrentImage(width: Int, height: Int) = img.fit(width, height).awt
 
     private def load(dirs: Iterable[String],
              noteFilter: Note => Boolean, toInteger: Note => Int) = {
@@ -50,10 +53,10 @@ class Pipeline(val catNN: NeuralNetwork, val durationNN: NeuralNetwork) {
 
     private def castToVector[T](matrix: DenseMatrix[T]) = new DenseVector[T](matrix.data)
 
-    def accept(t: Int) = img.foreach(dumpExample(t, _))
+    def accept(n: Note) = dumpDuration(n, img)
 
-    def dumpExample(y: Int, img: Image) = {
-        outputDir + s"/img_$index.txt" <<| s"$index;Note;_;_;_;${Note.durationDescription(y)};_"
+    def dumpDuration(n: Note, img: Image) = {
+        outputDir + s"/img_$index.txt" <<| n.toString
         img.write(outputDir + s"/img_$index.png")
         index += 1
         counter <<| s"$index"
@@ -71,7 +74,7 @@ object Pipeline {
         new Pipeline(NeuralNetwork.fromFile(noteLayers), NeuralNetwork.fromFile(durationLayers))
 
     def empty() = { new Pipeline(
-            new NeuralNetwork(width*height, 10, Note.catDescription.length),
+            new NeuralNetwork(width*height, 10, 2),
             new NeuralNetwork(width*height, 15, Note.durationDescription.length)
         ) }   
 }

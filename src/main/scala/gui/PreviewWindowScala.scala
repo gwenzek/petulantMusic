@@ -7,7 +7,6 @@ import java.awt._
 import java.awt.event.ActionEvent
 import impl.EasyUI
 import impl.EasyUI.easyActionListener
-import java.io.File
 import core.Note
 
 /**
@@ -32,7 +31,7 @@ object PreviewWindowScala extends App{
 
     private def loadFile {
         this.imageChooser.showOpenDialog(this.loadButton)
-        val imageFile: File = this.imageChooser.getSelectedFile
+        val imageFile = this.imageChooser.getSelectedFile
         if (imageFile != null) {
             imageNameTextArea.setText(imageFile.getName)
             imagePanel.load(imageFile)
@@ -91,7 +90,7 @@ object PreviewWindowScala extends App{
     fileNumberTextField.setValue(new Integer(1))
     fileNumberTextField.setHorizontalAlignment(4)
     fileNumberTextField.setMinimumSize(new Dimension(150, 19))
-    fileNumberTextField.setText("file number")
+    fileNumberTextField.setText("0")
     fileNumberTextField.setToolTipText("file number")
     toolBar2.add(fileNumberTextField)
 
@@ -99,10 +98,9 @@ object PreviewWindowScala extends App{
     okButton.setText("Ok")
     okButton.addActionListener((e: ActionEvent) => {
         val n: Int = fileNumberTextField.getValue.asInstanceOf[Integer]
-        if (imagePanel.saveSelected("img_" + n, "" + n + ' ' + getDescription)) 
-            fileNumberTextField.setValue(Integer.parseInt(fileNumberTextField.getValue.toString) + 1)
-        }
-    )
+        if (imagePanel.saveSelected("img_" + n, getDescription)) 
+            fileNumberTextField.setValue(n + 1)
+    })
     toolBar2.add(okButton)
 
 

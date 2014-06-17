@@ -18,6 +18,7 @@ class Note(val properties: Array[String]) {
     
     lazy val pointed = properties(Note.POINTED) == "*"
     lazy val isNote = cat == Note.catDescription.indexOf("Note")
+    lazy val isSomething = if(cat == Note.catDescription.indexOf("Nothing")) 0 else 1
 
     override def toString() = {
 
@@ -57,5 +58,11 @@ object Note {
     def fromFile(filename: String) = {
         val lines = Source.fromFile(filename).getLines
         new Note(lines.next)
+    }
+
+    def partial(iLabel: (Int, String)*) = {
+        val desc = new Array[String](propertiesDef.length)
+        for((i, label) <- iLabel) desc(i) = label
+        new Note(desc)
     }
 }

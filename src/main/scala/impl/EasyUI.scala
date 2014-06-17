@@ -13,22 +13,28 @@ object EasyUI{
             override def actionPerformed(e: ActionEvent) = f(e)
         }
 
-    implicit def easyFileFilter( filters: (String => Boolean)* ) : FileFilter = {
-        def recAccept(s: String) : Boolean = {
+    def easyFileFilter(desc: String,filters: (String => Boolean)* ) = new FileFilter() {
+        override def accept(file: File) : Boolean = {
+            if (file.isDirectory) return true
             for(f <- filters){
-                if (f(s)) return true
+                if (f(file.getName)) return true
             }
             false
         }
-        new FileFilter() {
-            override def accept(file: File) = recAccept(file.getName)
-            override val getDescription = s"Filtering according to ${filters.length} filters"
-        }
+        override val getDescription = desc
+    }
+
+    private def extToFilter(ext: String) : (String => Boolean) = _.endsWith(ext)
+
+    def fileFilterByExt(summary: String, exts: String*) : FileFilter = {
+        val desc = summary + '|' + exts.toString + '|'
+        val filters = exts.map(extToFilter) 
+        easyFileFilter(desc, filters:_*)
     }
 
     def imageFileChooser() = {
         val chooser = new JFileChooser()
-        chooser.setFileFilter(easyFileFilter(_.endsWith(".png"), _.endsWith(".jpeg"), _.endsWith(".gif")))
+        chooser.setFileFilter(fileFilterByExt("images", ".jpeg", ".gif", ".png"))
         chooser
     }
 }
