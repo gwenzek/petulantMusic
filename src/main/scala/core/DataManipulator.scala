@@ -21,9 +21,9 @@ object DataManipulator {
         }
     }
 
-    def aggregate(directory: String) = { writer: Writer =>
-        directory.list().filter(_.endsWith(".png")).foreach {
-            filename: String => copyFileIn(directory + '/' + getTxt(filename), writer)
+    def aggregate(dir: String) = { writer: Writer =>
+        listImages(dir).foreach {
+            filename: String => copyFileIn(dir + '/' + getTxt(filename), writer)
         }
     }
 
@@ -36,8 +36,8 @@ object DataManipulator {
     }
 
     def copyImgAndTxt(filename: String, newFilename: String, newIndex: Int) {
+        val line = new Scanner(new FileReader(getTxt(filename))).nextLine()
         val rewriteTxt = { writer: Writer =>
-            val line = new Scanner(new FileReader(getTxt(filename))).nextLine()
             writer.write(s"$newIndex ${line.split(" ", 2)(1)}\n")
         }
         newFilename + s"_$newIndex.txt" <<| rewriteTxt
@@ -63,8 +63,14 @@ object DataManipulator {
         i_output
     }
 
-    def listImages(dir: String) = dir.list().filter(_.endsWith(".png")).toIterator
-    def listImagesDescriptions(dir: String) = for(img <- listImages(dir)) yield (img, getTxt(img))
+    def listImages(dir: String) = dir.list().filter(_.endsWith(".png")).toIterator.map(dir + '/' + _)
+    def listImages(directories: Iterable[String]) : Iterator[String] = {
+        directories.map(listImages).fold(Iterator[String]())(_ ++ _)
+    }
+
+    def listImagesDescriptions(directories: Iterable[String]) = {
+        listImages(directories).map((img: String) => (img, getTxt(img)))
+    }
 
     def main(args : Array[String]){
         "duration/description.txt" <<| aggregate("duration")

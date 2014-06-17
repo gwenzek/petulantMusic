@@ -29,7 +29,7 @@ object DataLoader {
         def getVector(img: String) = castToVector(
             loadImageClipAndPad(dir+'/'+img, width, height, firstLine, lastLine))
         
-        for (img_desc <- DataManipulator.listImagesDescriptions(dir).filter(desc_filter)) 
+        for (img_desc <- DataManipulator.listImagesDescriptions(List(dir)).filter(desc_filter)) 
             yield (getVector(img_desc._1), desc_toInt(img_desc._2))
     }
 

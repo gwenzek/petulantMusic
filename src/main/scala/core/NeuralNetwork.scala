@@ -46,6 +46,7 @@ class NeuralNetwork(
         }
     }
     def applyWithBias(theta: DenseMatrix[Double], x: DenseVector[Double]): DenseVector[Double] = {
+        // println(s"${(theta.rows, theta.cols)} * ${x.length}")
         (theta(::, 0 to -2) * x) + theta(::, -1)
     }
 
@@ -219,7 +220,7 @@ object NeuralNetwork{
         DenseMatrix.rand[Double](rows, cols, uniform)
     }
 
-    def fromFile(filename: String) {
+    def fromFile(filename: String) = {
         val input = new Scanner(new FileReader(filename))
 
         val yieldLayers = new Iterator[DenseMatrix[Double]]{

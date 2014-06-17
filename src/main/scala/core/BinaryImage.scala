@@ -4,11 +4,11 @@ import breeze.linalg.DenseMatrix
 import breeze.plot._
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.ScaleMethod.Bicubic
+import com.sksamuel.scrimage.Color //yeah !
 import impl.MatrixConversion.{binaryToMatrix, imageToBinary, imageToMatrix}
-
 import scala.language.implicitConversions
 
-class BinaryImage(val data: DenseMatrix[Int]) /*extends DenseMatrix[Int]*/{
+class BinaryImage(val data: DenseMatrix[Int]){
 
     private def pixelMatchPattern(x: Int, y: Int, pattern: BinaryImage) : Boolean = {     
         for(i <- 0 until pattern.rows){
@@ -104,19 +104,20 @@ object BinaryImage{
         val last : Int = xys.last._2
         val a : Double = (firstLine - lastLine).toDouble / (first - last)
         var shrinked : Image = img scaleTo(width, (img.height.toDouble*a).toInt, Bicubic)
+        val f = new Figure("shrinked", 2, 2)
         // first -> a*first
         first = (a*first).toInt
-        val leftCols = firstLine - first
-        val rightCols = height - shrinked.width - leftCols
-        if (leftCols > 0){
-            shrinked = padTo(shrinked, leftCols, 0, 0, 0)
-        } else if (leftCols < 0) {
-            shrinked = shrinked.trim(-leftCols, 0, 0, 0)
+        val top = firstLine - first
+        val bottom = height - shrinked.height - top
+        if (top > 0){
+            shrinked = shrinked.padWith(0, top, 0, 0)
+        } else if (top < 0) {
+            shrinked = shrinked.trim(0, -top, 0, 0)
         }
-        if (rightCols > 0){
-            shrinked = padTo(shrinked, 0, 0, rightCols, 0)
-        } else if (rightCols < 0) {
-            shrinked = shrinked.trim(0, 0, -rightCols, 0)
+        if (bottom > 0){
+            shrinked = shrinked.padWith(0, 0, 0, bottom)
+        } else if (bottom < 0) {
+            shrinked = shrinked.trim(0, 0, 0, -bottom)
         }
         return shrinked
     }
