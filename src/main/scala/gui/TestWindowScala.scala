@@ -1,10 +1,12 @@
+package gui
+
 import java.awt._
 import java.awt.event.ActionEvent
 import java.io.IOException
 import javax.swing._
 import com.intellij.uiDesigner.core.{GridConstraints, GridLayoutManager}
 import com.sksamuel.scrimage.Image
-import impl.ListenerConversion.performedToListener
+import impl.EasyUI.easyActionListener
 import core.{Pipeline, Note}
 
 /**
@@ -17,7 +19,8 @@ object TestWindowScala extends App {
     val testWindow = new JPanel
     testWindow.setLayout(gridLayout(2, 2))
 
-    val pipeline = new Pipeline("layers/layers_200.txt")
+    // val pipeline = Pipeline.fromFile("layers/note_200.txt", "layers/duration_200.txt")
+    val pipeline = Pipeline.empty
 
     private val panel1: JPanel = new JPanel
     panel1.setLayout(gridLayout(2, 1))

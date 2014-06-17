@@ -12,17 +12,9 @@ import impl.MatrixConversion.imageToMatrix
  */
 object DataLoader {
 
-    def loadAsRaw(filename: String, imageName: String, width: Int, height: Int) = {
-        val descriptions = io.Source.fromFile(filename).getLines()
-        val notes = for (description <- descriptions) yield new Note(description)
-        def getVector(n: Note) = castToVector(loadImage(imageName + s"_${n.index}.png", width, height))
-        for (note <- notes) yield (getVector(note), note)
-    }
-
     def load(dir: String, width: Int, height: Int,
              firstLine: Int, lastLine: Int,
              noteFilter: Note => Boolean, toInteger: Note => Int) = {
-
 
         def desc_filter(img_desc: (String, String)) = noteFilter(Note.fromFile(dir+'/'+img_desc._2))
         def desc_toInt(desc: String) = toInteger(Note.fromFile(dir+'/'+desc))

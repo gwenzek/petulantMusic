@@ -168,7 +168,10 @@ class NeuralNetwork(
 
     def matrixShape[T](m: DenseMatrix[T]) = s"(${m.rows}, ${m.cols})"
 
-    def train(xtl: Iterable[(DenseVector[Double], Int)], niter: Int, checkFrequency: Int = 1) {
+    def train(xtl: Iterable[(DenseVector[Double], Int)], niter: Int,
+            checkFrequency: Int = 1,
+            outputRule: Int => String = (x => s"layers/layer_$x.txt")) {
+
         for (i <- 1 to niter) {
             propagation(xtl)
             if (i % checkFrequency == 0) {
@@ -177,14 +180,14 @@ class NeuralNetwork(
                 println(s"Accuracy : ${accuracy(xtl)}")
                 println("Confusion matrix:")
                 println(confusionMatrix(xtl))
-                dumpToFile(s"layers/layers_$i.txt")
+                dumpToFile(i, outputRule)
             }
         }
-        dumpToFile(s"layers/layers_$niter.txt")
+        dumpToFile(niter, outputRule)
     }
     
-    def dumpToFile(filename: String){
-        val output = new FileWriter(filename)
+    private def dumpToFile(niter: Int, outputRule: Int => String){
+        val output = new FileWriter(outputRule(niter))
         for (theta <- layers) {
             output.write(s"Layer ${theta.rows} ${theta.cols}\n")
             for(i <- 0 until theta.rows){
@@ -195,7 +198,7 @@ class NeuralNetwork(
             }
         }
         output.close()
-        println("Neural network saved to : " + filename)
+        println("Neural network saved to : " + outputRule(niter))
     }
 }
 
@@ -260,8 +263,7 @@ object NeuralNetwork{
             _.isNote, _.duration).filter(_._1.length == width*height).toList
         // xtl.foreach(xt => print(s"${xt._2} "))
         // println()
-        val nn = new NeuralNetwork(width * height, hidden, Note.durationClass)
-        nn.dumpToFile("layers/layers_0.txt")
+        val nn = new NeuralNetwork(width * height, hidden, Note.durationDescription.length)
         nn.train(xtl, 200, 10)
         // for (i <- 0 until nn.theta1.rows) {
         //     visualizeHiddenLayer(nn.theta1, width, height, i)

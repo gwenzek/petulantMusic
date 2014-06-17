@@ -1,3 +1,5 @@
+package gui
+
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.image.BufferedImage
 import java.awt.{Graphics, Dimension, Color}

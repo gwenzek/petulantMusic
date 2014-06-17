@@ -2,35 +2,34 @@ package core
 
 import com.sksamuel.scrimage.Image
 import java.awt.image.BufferedImage
-import impl.MatrixConversion.imageToMatrix
-import java.io._
-import java.util.Scanner
-import scala.language.implicitConversions
+import java.io.File
 import breeze.linalg.{DenseVector, DenseMatrix}
+import impl.MatrixConversion.imageToMatrix
+import impl.EasyIO.{WriteAndClose, FileAsInt}
 
-class Pipeline(val nn: NeuralNetwork) {
-    private val width = 20
-    private val height = 70
-    private val firstLine = 20
-    private val lastLine = 50    
+class Pipeline(val catNN: NeuralNetwork, val durationNN: NeuralNetwork) {
+    val width = Pipeline.width
+    val height = Pipeline.height
+    private val firstLine = Pipeline.firstLine
+    private val lastLine = Pipeline.lastLine
     private var img: Option[Image] = None
 
     val trainingDirs = List("data")
     val outputDir = "collected"
     val counter = outputDir + '/' + "counter.txt"
-    private var index: Int = readIndex
-
-    def this(file: String) = this(NeuralNetwork.fromFile(file))
+    private var index: Int = counter.readAsInt
 
     def train(){
-        val xtl = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
-        nn.train(xtl, 200, 10)
+        val categories = load(outputDir :: trainingDirs, (n: Note) => true, _.cat).toList
+        catNN.train(categories, 200, 10, (x: Int) => s"layers/note_$x.txt")
+        val durations = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
+        durationNN.train(durations, 200, 10, (x: Int) => s"layers/duration_$x.txt")
     }
 
     def getPrediction(buff: BufferedImage) = {
         val centered: Image = BinaryImage.centerOnLines(Image(buff), width, height, firstLine, lastLine)
         val x = castToVector(centered)
-        val y = nn.getPredictedClass(x)
+        val y = durationNN.getPredictedClass(x)
         img = Some(centered)
         (y, centered.awt)
     }
@@ -59,23 +58,20 @@ class Pipeline(val nn: NeuralNetwork) {
         index += 1
         counter <<| s"$index"
     }
+}
 
-    def readIndex = {
-        val scanner = new Scanner(new FileReader(counter))
-        scanner.nextInt
-    }
+object Pipeline {
+  
+    val width = 20
+    val height = 70
+    private val firstLine = 20
+    private val lastLine = 50 
 
-    implicit class WriteAndClose(output: String) {
-        def <<| (s: String) = {
-            val writer = new FileWriter(output)
-            writer.write(s)
-            writer.close()
-        }
+    def fromFile(noteLayers: String, durationLayers: String) = 
+        new Pipeline(NeuralNetwork.fromFile(noteLayers), NeuralNetwork.fromFile(durationLayers))
 
-        def <<| (messages: Iterable[String]) {
-            val writer = new FileWriter(output)
-            messages.foreach((s: String) => writer.write(s + '\n'))
-            writer.close()
-        }
-    }
+    def empty() = { new Pipeline(
+            new NeuralNetwork(width*height, 10, Note.catDescription.length),
+            new NeuralNetwork(width*height, 15, Note.durationDescription.length)
+        ) }   
 }

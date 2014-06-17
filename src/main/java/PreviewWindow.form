@@ -87,9 +87,9 @@
               <maximumSize width="150" height="500"/>
               <model>
                 <item value="normal"/>
-                <item value="#"/>
-                <item value="b"/>
-                <item value="\u266E"/>
+                <item value="diese"/>
+                <item value="bemol"/>
+                <item value="becarre"/>
               </model>
             </properties>
           </component>
