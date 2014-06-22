@@ -1,11 +1,11 @@
 package core
 
 import com.sksamuel.scrimage.Image
-import java.awt.image.BufferedImage
+// import java.awt.image.BufferedImage
 import java.io.File
 import breeze.linalg.{DenseVector, DenseMatrix}
 import impl.MatrixConversion.imageToMatrix
-import impl.EasyIO.{WriteAndClose, FileAsInt}
+import impl.EasyIO.{WriteAndClose, FileCounter}
 
 class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
     val width = Pipeline.width
@@ -16,18 +16,19 @@ class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
 
     val trainingDirs = List("data", "nothing")
     val outputDir = "collected"
-    val counter = outputDir + '/' + "counter.txt"
-    private var index: Int = counter.readAsInt
+    val counter = new FileCounter(outputDir)
 
     def train(){
         val categories = load(outputDir :: trainingDirs, (n: Note) => true, _.isSomething).toList
         somethingNN.train(categories, 100, 10, (x: Int) => s"layers/note_$x.txt")
+        // NeuralNetwork.visualizeAllHiddenLayers(somethingNN, width, height)
         val durations = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
         durationNN.train(durations, 200, 10, (x: Int) => s"layers/duration_$x.txt")
+        // NeuralNetwork.visualizeAllHiddenLayers(durationNN, width, height)
     }
 
-    def getPrediction(buff: BufferedImage) = {
-        val centered: Image = BinaryImage.centerOnLines(Image(buff), width, height, firstLine, lastLine)
+    def getPrediction(input: Image) = {
+        val centered: Image = BinaryImage.centerOnLines(input, width, height, firstLine, lastLine)
         val x = castToVector(centered)
         img = centered
         val isSomething = somethingNN.getPredictedClass(x) > 0
@@ -53,22 +54,21 @@ class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
 
     private def castToVector[T](matrix: DenseMatrix[T]) = new DenseVector[T](matrix.data)
 
-    def accept(n: Note) = dumpDuration(n, img)
+    def accept(n: Note) = dumpNote(n, img)
 
-    def dumpDuration(n: Note, img: Image) = {
-        outputDir + s"/img_$index.txt" <<| n.toString
-        img.write(outputDir + s"/img_$index.png")
-        index += 1
-        counter <<| s"$index"
+    def dumpNote(n: Note, img: Image) = {
+        outputDir + s"/img_${counter.index}.txt" <<| n.toString
+        img.write(outputDir + s"/img_${counter.index}.png")
+        counter += 1
     }
 }
 
 object Pipeline {
   
     val width = 20
-    val height = 70
-    private val firstLine = 20
-    private val lastLine = 50 
+    val height = 80
+    private val firstLine = 30
+    private val lastLine = 50
 
     def fromFile(noteLayers: String, durationLayers: String) = 
         new Pipeline(NeuralNetwork.fromFile(noteLayers), NeuralNetwork.fromFile(durationLayers))

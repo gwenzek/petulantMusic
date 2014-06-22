@@ -1,8 +1,9 @@
 package impl
 
 import java.io._
+import scala.io.Source
 import scala.language.implicitConversions
-import java.util.Scanner
+
 
 object EasyIO{
     implicit class WriteAndClose(output: String) {
@@ -19,10 +20,11 @@ object EasyIO{
         }
     }
 
-    implicit class FileAsInt(input: String) {
-        def readAsInt () = {
-            val scanner = new Scanner(new FileReader(input))
-            scanner.nextInt
-        }
+    class FileCounter(dir: String){
+        val counter = dir+'/'+".counter"
+        def index() : Int = 
+            try{ Source.fromFile(counter).getLines.next.toInt }
+            catch{ case e: java.io.FileNotFoundException => 0 }
+        def +=(i: Int) = counter <<| (index + i).toString
     }
 }

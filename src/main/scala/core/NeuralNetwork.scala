@@ -64,16 +64,15 @@ class NeuralNetwork(
         -cost
     }
 
-    def classificationCost(xt: Iterable[(DenseVector[Double], Int)]): Double = {
-        xt.map((xt: (DenseVector[Double], Int)) => classificationCost(xt._1, xt._2)).sum
+    def classificationCost(xt: Iterable[(DenseVector[Double], Int)], size: Int = 1): Double = {
+        xt.map((xt: (DenseVector[Double], Int)) => classificationCost(xt._1, xt._2)).sum / size
     }
 
-    def accuracy(xt: Iterable[(DenseVector[Double], Int)]): Double = {
+    def accuracy(xt: Iterable[(DenseVector[Double], Int)], size: Int = 1): Double = {
         def countCorrect(xt: Iterable[(DenseVector[Double], Int)]): Int = {
             xt.map { (xt) => if (getPredictedClass(xt._1) == xt._2) 1 else 0}.sum
         }
-        val lxt = xt.toList
-        countCorrect(xt).toDouble / lxt.length
+        countCorrect(xt).toDouble / size
     }
 
     def confusionMatrix(xt: Iterable[(DenseVector[Double], Int)]) = {
@@ -168,14 +167,15 @@ class NeuralNetwork(
 
     def matrixShape[T](m: DenseMatrix[T]) = s"(${m.rows}, ${m.cols})"
 
-    def train(xtl: Iterable[(DenseVector[Double], Int)], niter: Int,
+    def train(xt: Traversable[(DenseVector[Double], Int)], niter: Int,
             checkFrequency: Int = 1,
             outputRule: Int => String = (x => s"layers/layer_$x.txt")) {
-
+        val xtl = xt.toIterable
+        val size = xt.size
         for (i <- 1 to niter) {
             propagation(xtl)
             if (i % checkFrequency == 0) {
-                println(s"Iteration $i, classification cost: ${classificationCost(xtl)}," +
+                println(s"Iteration $i, classification cost: ${classificationCost(xtl, size)}," +
                         s"regularisation cost: ${regularisationCost}")
                 println(s"Accuracy : ${accuracy(xtl)}")
                 println("Confusion matrix:")
@@ -212,6 +212,12 @@ object NeuralNetwork{
         f.subplot(0) += image(mat)
     }
 
+    def visualizeAllHiddenLayers(nn: NeuralNetwork, width: Int, height:Int){
+        for (i <- 0 until nn.theta1.rows) {
+            visualizeHiddenLayer(nn.theta1, width, height, i)
+        }
+    }
+
     def visualizeInput(f: Figure, x: DenseVector[Double], width: Int, height: Int) {
         val mat = new DenseMatrix(width, height, x.data)
         f.subplot(0) += image(mat)
@@ -234,12 +240,12 @@ object NeuralNetwork{
                 val dim = line.split(" ")
                 val rows = dim(1).toInt
                 val cols = dim(2).toInt
-                val theta = new Array[Double](rows * cols)
-                for(i <- 0 until rows; j <- 0 until cols){
-                    theta(i*cols + j) = input.nextDouble
+                val theta = DenseMatrix.zeros[Double](rows, cols)
+                for(i <- 0 until rows){
+                    for(j <- 0 until cols){theta(i, j) = input.nextDouble}
                 }
                 input.nextLine
-                new DenseMatrix[Double](rows, cols, theta)
+                theta
             }
         }
         new NeuralNetwork(yieldLayers.toList)

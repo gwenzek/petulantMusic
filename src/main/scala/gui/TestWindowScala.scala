@@ -6,21 +6,19 @@ import java.io.IOException
 import javax.swing._
 import com.intellij.uiDesigner.core.{GridConstraints, GridLayoutManager}
 import com.sksamuel.scrimage.Image
-import impl.EasyUI.easyActionListener
+import impl.EasyUI.{easyActionListener, gridLayout}
 import core.{Pipeline, Note}
 
 /**
  * Created by guillaume on 14/06/14.
  */
 object TestWindowScala extends App {
-    
-    def gridLayout(x: Int, y: Int) = new GridLayoutManager(x, y, new Insets(0, 0, 0, 0), -1, -1)
 
     val testWindow = new JPanel
-    testWindow.setLayout(gridLayout(2, 2))
+    testWindow.setLayout(gridLayout(3, 2))
 
-    val pipeline = Pipeline.fromFile("layers/note_80.txt", "layers/duration_190.txt")
-    // val pipeline = Pipeline.empty
+    // val pipeline = Pipeline.fromFile("layers/note_80.txt", "layers/duration_190.txt")
+    val pipeline = Pipeline.empty
 
     private val panel1: JPanel = new JPanel
     panel1.setLayout(gridLayout(2, 1))
@@ -39,28 +37,11 @@ object TestWindowScala extends App {
     panel2.setLayout(gridLayout(4, 2))
     panel1.add(panel2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK, GridConstraints.SIZEPOLICY_CAN_SHRINK, null, null, null, 0, false))
     
-    val durationComboBox = new JComboBox[String](Note.durationDescription)
-    panel2.add(durationComboBox, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+    val noteToolBar = new NoteToolBar
+    testWindow.add(noteToolBar, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 20), null, 0, false))
     
-    val fileNumberField = new JFormattedTextField
-    panel2.add(fileNumberField, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false))
-    
-    val typeComboBox = new JComboBox[String](Note.catDescription)
-    panel2.add(typeComboBox, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
+    noteToolBar.okButton.addActionListener((e: ActionEvent) => accept) 
 
-    private val label1: JLabel = new JLabel
-    label1.setText("Duration")
-    panel2.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
-    
-    private val label2: JLabel = new JLabel
-    label2.setText("File number")
-    panel2.add(label2, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
-    
-    val OKButton = new JButton
-    OKButton.setText("OK")
-    OKButton.addActionListener((e: ActionEvent) => accept)
-    panel2.add(OKButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
-    
     private val panel3: JPanel = new JPanel
     panel3.setLayout(gridLayout(1, 1))
     testWindow.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(400, 400), null, 0, false))
@@ -113,30 +94,29 @@ object TestWindowScala extends App {
     }
 
     def selectNote() : Unit = {
-        val selected = imagePanel.getSelectedImage
+        val selected = Image(imagePanel.getSelectedImage)
         val y = pipeline.getPrediction(selected)
         zoomLabel.setIcon(new ImageIcon(pipeline.getCurrentImage(zoomWidth, zoomHeight)))
-        
+
         y match {
             case None => zoomLabel.setText("Rejected")
-            case Some(label) => 
+            case Some(label: Int) => 
                 zoomLabel.setText(Note.durationDescription(label))
-                durationComboBox.setSelectedIndex(label)
-                durationComboBox.repaint()
+                noteToolBar.durationComboBox.setSelectedIndex(label)
+                noteToolBar.durationComboBox.repaint()
         }
         zoomLabel.repaint()
     }
 
     def accept() : Unit = {
-        val note = Note.partial((Note.CAT, typeComboBox.getSelectedItem.toString), 
-                                (Note.DURATION, durationComboBox.getSelectedItem.toString))
+        val note = noteToolBar.getNote
         val message = {
             try { pipeline.accept(note); "saved"
             } catch {
               case e: IOException => "saving failed"
             }
         }
-        zoomLabel.setText(durationComboBox.getSelectedItem.toString + ' ' + message)
+        // zoomLabel.setText(durationComboBox.getSelectedItem.toString + ' ' + message)
     }
 
 }

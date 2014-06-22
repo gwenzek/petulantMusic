@@ -16,7 +16,7 @@ class Note(val properties: Array[String]) {
     lazy val annotation = Note.annotationDescription.indexOf(properties(Note.ANNOTATION))
     lazy val duration = Note.durationDescription.indexOf(properties(Note.DURATION))
     
-    lazy val pointed = properties(Note.POINTED) == "*"
+    lazy val isPointed = properties(Note.POINTED) == "*"
     lazy val isNote = cat == Note.catDescription.indexOf("Note")
     lazy val isSomething = if(cat == Note.catDescription.indexOf("Nothing")) 0 else 1
 

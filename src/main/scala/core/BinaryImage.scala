@@ -87,21 +87,11 @@ object BinaryImage{
         figure.subplot(1) += image(clipped)
     }
 
-    def padTo(img: Image, left: Int, top: Int, right: Int, bottom: Int): Image = {
-        val w = img.width + left + right
-        val h = img.height + top + bottom
-        val filled = Image.filled(w, h, 0xFFFFFF)
-        val g = filled.awt.getGraphics
-        g.drawImage(img.awt, left, top, null)
-        g.dispose()
-        filled
-    }
-
     def centerOnLines(img: Image, width: Int, height: Int, firstLine: Int, lastLine: Int) : Image = {
-        val xys = img.findLines().toList
-        if(xys.length < 2) return img scaleTo(width, height, Bicubic)
-        var first : Int = xys.head._2
-        val last : Int = xys.last._2
+        val xys = img.findLines().toArray
+        if(xys.length < 4) return img scaleTo(width, height, Bicubic)
+        var first : Int = xys(0)._2
+        val last : Int = xys(3)._2
         val a : Double = (firstLine - lastLine).toDouble / (first - last)
         var shrinked : Image = img scaleTo(width, (img.height.toDouble*a).toInt, Bicubic)
         val f = new Figure("shrinked", 2, 2)
