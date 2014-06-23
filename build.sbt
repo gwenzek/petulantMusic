@@ -1,4 +1,4 @@
-scalaVersion := "2.11.0"
+// scalaVersion := "2.10"
 
 name := "PetulantMusic"
 
@@ -10,10 +10,10 @@ libraryDependencies ++= Seq(
     "org.scalanlp" %% "breeze-viz" % "0.8"
 )
 
-libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-core" % "1.4.0"
-
-// libraryDependencies += "com.sksamuel.scrimage" %% "scrimage-filters" % "1.4.0"
+libraryDependencies += "com.gwenzek.scrimage" %% "scrimage-core" % "1.4.0"
 
 libraryDependencies += "com.intellij" % "forms_rt" % "6.0.5"
 
 scalacOptions ++= Seq("-deprecation", "-feature")
+
+// conflictManager := ConflictManager.strict
