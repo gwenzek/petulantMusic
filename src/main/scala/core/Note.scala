@@ -51,9 +51,9 @@ object Note {
     final val POINTED = propertiesDef.indexOf("Pointed")
 
     val catDescription = Array("Nothing", "Note", "Cle", "Silence", "Annotation")
-    val noteDescription = Array("Do", "Re", "Mi", "Fa", "Sol", "La", "Si")
-    val annotationDescription = Array("normal", "diese", "bemol", "becarre")
-    val durationDescription = Array("2xCroche", "croche", "noire", "blanche", "ronde")
+    val noteDescription = Array("Do", "Re", "Mi", "Fa", "Sol", "La", "Si", "_")
+    val annotationDescription = Array("normal", "diese", "bemol", "becarre", "_")
+    val durationDescription = Array("2xCroche", "croche", "noire", "blanche", "ronde", "_")
 
     def fromFile(filename: String) = {
         val lines = Source.fromFile(filename).getLines
