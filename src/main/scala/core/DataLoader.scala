@@ -14,10 +14,10 @@ object DataLoader {
 
     def load(dir: String, width: Int, height: Int,
              firstLine: Int, lastLine: Int,
-             noteFilter: Note => Boolean, toInteger: Note => Int) = {
+             noteFilter: Symbol => Boolean, toInteger: Symbol => Int) = {
 
-        def desc_filter(img_desc: (String, String)) = noteFilter(Note.fromFile(dir+'/'+img_desc._2))
-        def desc_toInt(desc: String) = toInteger(Note.fromFile(dir+'/'+desc))
+        def desc_filter(img_desc: (String, String)) = noteFilter(Symbol.fromFile(dir+'/'+img_desc._2))
+        def desc_toInt(desc: String) = toInteger(Symbol.fromFile(dir+'/'+desc))
         def getVector(img: String) = castToVector(
             loadImageClipAndPad(dir+'/'+img, width, height, firstLine, lastLine))
         

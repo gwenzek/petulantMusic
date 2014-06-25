@@ -5,7 +5,7 @@ import java.awt.Graphics2D
 import java.io.File
 import impl.EasyMath.{EasyIterable, range2D}
 
-object LineFinder {
+object NoteFinder {
 
     val Black = 0xFF000000
     val White = 0xFFFFFFFF
@@ -51,11 +51,11 @@ object LineFinder {
         def fill(line: Line) = 
             extracted._fill(line.x, line.y, line.length, 1, X11Colorlist.Red)
         lines.foreach(fill)
-        lines.foreach(println)
+        // lines.foreach(println)
         extracted
     }
 
-    case class Chunk(img: Image, line0: Line, line1: Line)
+    case class Chunk(img: Image, delta: Int, x0: Int, y0: Int)
     def splitByLines(img: Image) = {
         val lines = findBlackLines(binarize(img)).toArray
         val iMax = lines.length
@@ -95,14 +95,15 @@ object LineFinder {
                     || (l4.y - l3.y < deltaMin)
                     || (l4.y - l3.y > deltaMax) 
                 ){
-                    println("line skipped")
+                    // println("line skipped")
                     i = i0
                     findBlock()
                 } else {
-                    val top = l0.y - (3 * (l1.y - l0.y) )
-                    val height = 10 * (l1.y - l0.y)
-                    println(s"Found block with ${l0.y}, ${l1.y}, ${l2.y}, ${l3.y}, ${l4.y}")
-                    Some(Chunk(img.subimage(l0.x, top, l0.length, height), l0, l1))
+                    val delta = (l4.y - l0.y) / 4
+                    val top = l0.y - (3 * delta)
+                    val height = l4.y + (3 * delta) - top
+                    // println(s"Found block with ${l0.y}, ${l1.y}, ${l2.y}, ${l3.y}, ${l4.y}")
+                    Some(Chunk(img.subimage(l0.x, top, l0.length, height), delta, l0.x, top))
                 }
             } catch {
                 case (e: java.lang.IndexOutOfBoundsException) => println("No more lines"); None
@@ -121,19 +122,19 @@ object LineFinder {
         chunks.reverse
     }
 
-    def epure(chunk: Chunk) : Image = {
-        val diameter = chunk.line1.y - chunk.line0.y
+    private def epure(chunk: Chunk) : Image = {
+        val diameter = chunk.delta
         val epured = Pattern.vLine(2*diameter).erase(binarize(chunk.img))
         val smallLine = Pattern.hLine((1.2 * Pattern.noteRatio * diameter).toInt)
         val bigNote = Pattern.notePattern(diameter)
         bigNote.erode(smallLine.close(epured))
     }
 
-    def extractNotes(chunk: Chunk, 
+
+    private def extractBlock(epured: Image, 
             begin:Int = 0, end_default: Int = -1,
             threshold: Int = 0) : List[(Int, Int)] = {
-        val end = if(end_default < 0) chunk.img.width else end_default
-        val epured = epure(chunk)
+        val end = if(end_default < 0) epured.width else end_default
         val sumByColumns = Array.ofDim[Int](end - begin)
         for(x <- begin until end; y <- 0 until epured.height){
             if(epured.pixel(x, y) == Black)
@@ -167,18 +168,42 @@ object LineFinder {
                 if(x1 == x0) Nil
                 else if(x1 - x0 < minWidth) {
                     val d = ((minWidth - (x1 - x0))/2).toInt
-                    println(s"$x0x1 extended to ${(x0 - d, x0 + d)}")
+                    // println(s"$x0x1 extended to ${(x0 - d, x0 + d)}")
                     List((x0 - d, x1 + d))
                 } else if(x1 - x0 > maxWidth) {
                     val h = sumByColumns.toIterable.minValue[Int]((x:Int) => x) + 1
-                    val newNotes = extractNotes(chunk, x0, x1, h)
-                    println(s"$x0x1 splitted in $newNotes with threshold $h")
+                    val newNotes = extractBlock(epured, x0, x1, h)
+                    // println(s"$x0x1 splitted in $newNotes with threshold $h")
                     newNotes
                 } else {
                     List((x0, x1))
                 }
         }
         blocks.flatMap(checkBlock).reverse
+    }
+
+    case class NoteBlock(img: Image, level: Int, x0: Int, y0: Int)
+    def findBlockAndLevels(chunk: Chunk) : List[NoteBlock] = {
+        val epured = epure(chunk)
+        val blocks = extractBlock(epured)
+        def generateNoteBlock(x0x1: (Int, Int)) = x0x1 match {
+            case (x0: Int, x1: Int) => 
+                val level = findLevel(epured, chunk.delta)(x0, x1)
+                val sub = chunk.img.subimage(x0, 0, x1 - x0, chunk.img.height)
+                NoteBlock(sub, level, x0 + chunk.x0, chunk.y0)
+        }
+        blocks.map(generateNoteBlock)
+    } 
+
+    private def findLevel(epured: Image, delta: Int)(x0: Int, x1: Int) = {
+        val sumByRows = Array.ofDim[Int](epured.height)
+        for(x <- x0 until x1; y <- 0 until epured.height){
+            if(epured.pixel(x, y) == Black)
+                sumByRows(y) += 1
+        }
+        val maxY = (0 until epured.height).maxArg[Int](y => sumByRows(y))
+        val level = (epured.height - maxY) * 20 / epured.height
+        level
     }
 
     def main(args: Array[String]) {
@@ -188,30 +213,40 @@ object LineFinder {
         }
         val file = "partitions/andantino_1.png"
         val in = new File(file)
-        // val out = new File(rename(file, "lines"))
+        val out = new File(rename(file, "combo"))
         // extractBlackLines(Image(in)).write(out)
         // val out2 = new File(rename(file, "binarized"))
         // binarize(Image(in)).write(out2)
         
-        def saveChunk(chunk_index: (Chunk, Int) ) : Unit = {
-            val i = chunk_index._2
-            val out = new File(rename(file, s"chunck_$i"))
-            val img = chunk_index._1.img.toMutable
+        val img = Image(in).toMutable
+        val chunks = splitByLines(img)
+        val noteBlocks = findBlockAndLevels(chunks(0))
 
-            val out2 = new File(rename(file, s"chunck_${i}_closed"))
-            val blocks = extractNotes(chunk_index._1)
-
-            for((x0, x1) <- blocks){
-                img.drawLine(x0, 0, x0, img.height, X11Colorlist.Red)
-                img.drawLine(x0, 0, x1, img.height, X11Colorlist.Red)
-                img.drawLine(x1, 0, x1, img.height, X11Colorlist.Red)
-            }
-            img.write(out2)
+        for(nB <- noteBlocks){
+            img.drawRect(nB.x0, nB.y0, nB.img.width, nB.img.height, X11Colorlist.Red)
         }
 
-        val chunks = splitByLines(Image(in))
-        chunks.zipWithIndex.map(saveChunk)
-        // chunks.map(extractNotes)
+        img.write(out)
+
+        // def saveChunk(chunk_index: (Chunk, Int) ) : Unit = {
+        //     val i = chunk_index._2
+        //     val out = new File(rename(file, s"chunck_$i"))
+        //     val img = chunk_index._1.img.toMutable
+
+        //     val out2 = new File(rename(file, s"chunck_${i}_closed"))
+        //     val blocks = extractBlock(epure(chunk_index._1))
+
+        //     for((x0, x1) <- blocks){
+        //         img.drawLine(x0, 0, x0, img.height, X11Colorlist.Red)
+        //         img.drawLine(x0, 0, x1, img.height, X11Colorlist.Red)
+        //         img.drawLine(x1, 0, x1, img.height, X11Colorlist.Red)
+        //     }
+        //     img.write(out2)
+        // }
+
+        // val chunks = splitByLines(Image(in))
+        // chunks.zipWithIndex.map(saveChunk)
+        // // chunks.map(extractNotes)
     }
 
 
@@ -237,7 +272,7 @@ class Pattern(val pixels: List[Pixel], val color: Int){
         for(p <- pixels) img.setPixel(x0 + p.x, y0 + p.y, p.color)
     }
     
-    def clearAt(img: MutableImage, x0: Int, y0: Int,  background: Int = LineFinder.White) = {
+    def clearAt(img: MutableImage, x0: Int, y0: Int,  background: Int = NoteFinder.White) = {
         for(p <- pixels) img.setPixel(x0 + p.x, y0 + p.y, background)
     }
 
@@ -259,7 +294,7 @@ class Pattern(val pixels: List[Pixel], val color: Int){
         eroded
     }
 
-    def erase(img: Image, background: Int = LineFinder.White) = {
+    def erase(img: Image, background: Int = NoteFinder.White) = {
         val erased = MutableImage(img)
         for(x <- width until (img.width - width);
             y <- height until (img.height- height)){
@@ -273,19 +308,19 @@ class Pattern(val pixels: List[Pixel], val color: Int){
 }
 
 object Pattern {
-    def hLine(length: Int, color: Int = LineFinder.Black): Pattern = {
+    def hLine(length: Int, color: Int = NoteFinder.Black): Pattern = {
         val l0 = length / 2
         val l1 = length - l0 - 1
         new Pattern((-l0 to l1).toList.map((x: Int) => Pixel(x, 0, color)))
     }
 
-    def vLine(length: Int, color: Int = LineFinder.Black): Pattern = {
+    def vLine(length: Int, color: Int = NoteFinder.Black): Pattern = {
         val l0 = length / 2
         val l1 = length - l0 - 1
         new Pattern((-l0 to l1).toList.map((y: Int) => Pixel(0, y, color)))
     }
 
-    def disk(radius: Int, color: Int = LineFinder.Black): Pattern = {
+    def disk(radius: Int, color: Int = NoteFinder.Black): Pattern = {
         val r = math.max(radius - 1, 0)
         // println(s"creating a disk of radius $radius")
         new Pattern(
@@ -296,14 +331,14 @@ object Pattern {
     }
 
     def fromImage(img: Image) = {
-        val binary = LineFinder.binarize(img)
-        def okay(x: Int, y: Int) = binary.pixel(x, y) == LineFinder.Black
+        val binary = NoteFinder.binarize(img)
+        def okay(x: Int, y: Int) = binary.pixel(x, y) == NoteFinder.Black
         val x0 = img.width / 2
         val y0 = img.height / 2
         new Pattern(
             range2D(0 until img.width, 0 until img.height).
             filter((xy: (Int, Int)) => okay(xy._1, xy._2)).toList.
-            map{ case (x, y) => Pixel(x - x0, y - y0, LineFinder.Black) }
+            map{ case (x, y) => Pixel(x - x0, y - y0, NoteFinder.Black) }
         )
     }
 

@@ -45,12 +45,7 @@ object PreviewWindowScala extends App{
     runButton.setText("Run")
     toolBar1.add(runButton)
     
-    val infoLabel = new JLabel
-    infoLabel.setText("Label")
-    previewWindow.add(infoLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false))
-
     val imagePanel = new ImagePanel()
-    imagePanel.addInfoLabel(infoLabel)
     previewWindow.add(imagePanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false))
     
     val noteToolBar = new NoteToolBar

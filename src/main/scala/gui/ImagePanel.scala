@@ -1,5 +1,6 @@
 package gui
 
+import com.sksamuel.scrimage.Image
 import java.awt.event.{MouseAdapter, MouseEvent}
 import java.awt.image.BufferedImage
 import java.awt.{Graphics, Dimension, Color}
@@ -20,7 +21,6 @@ class ImagePanel(val selectionDone: () => Unit) extends JPanel{
     private var imageLoaded = false
     private var image : BufferedImage = null
 
-    private var infoLabel : JLabel = null;
     private var squareX = 0
     private var squareY = 0
     private var squareW = 0
@@ -39,12 +39,6 @@ class ImagePanel(val selectionDone: () => Unit) extends JPanel{
     addMouseMotionListener(new MouseAdapter() {
         override def mouseDragged(e : MouseEvent) = updateMovingCorner(e.getX, e.getY)
     })
-
-    def addInfoLabel(label : JLabel){
-        infoLabel = label
-        infoLabel.setText("No image loaded")
-        infoLabel.repaint()
-    }
 
     private def updateMovingCorner(x : Int, y : Int) {
         val (oldW, oldH) = (squareW, squareH)
@@ -68,21 +62,22 @@ class ImagePanel(val selectionDone: () => Unit) extends JPanel{
         g.drawRect(squareX, squareY, squareW, squareH)
     }
 
-    protected def printMessage(s: String) {
-        infoLabel.setText(s)
-        infoLabel.repaint()
-    }
-
     def load(imageFile : File){
         try {
             image = ImageIO.read(imageFile)
             imageLoaded = true
-            printMessage("Image loaded")
             this.setSize(new Dimension(image.getWidth, image.getHeight))
             this.repaint()
         } catch {
-            case e : IOException => printMessage(s"Loading ${imageFile.getName} failed")
+            case e : IOException => println(s"Loading ${imageFile.getName} failed")
         }
+    }
+
+    def load(img: Image){
+        image = img.awt
+        imageLoaded = true
+        this.setSize(new Dimension(image.getWidth, image.getHeight))
+        this.repaint()
     }
 
     def getSelectedImage : BufferedImage = image.getSubimage(
@@ -100,20 +95,15 @@ class ImagePanel(val selectionDone: () => Unit) extends JPanel{
                     val descriptionOutput = new FileWriter(filename + ".txt")
                     descriptionOutput.write(description)
                     descriptionOutput.close()
-                    printMessage(s"Saved in $filename")
                     true
                 } else {
-                    printMessage("!!! Select something before exporting !!!")
                     false
                 }
             } else {
-                printMessage("!!! Load an image before exporting !!!")
                 false
             }
         } catch {
-            case e : IOException =>
-                printMessage("!!! Failed to export !!!")
-                false
+            case e : IOException =>  false
         }
     }
 

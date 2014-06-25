@@ -7,7 +7,7 @@ object EasyMath{
             var minX = it.next
             var minV = f(minX)
             for(x <- it){
-                if(f(x) < minV) minV = f(x); minX = x
+                if(f(x) < minV){ minV = f(x); minX = x }
             }
             (minX, minV)
         }
@@ -20,7 +20,7 @@ object EasyMath{
             var maxX = it.next
             var maxV = f(maxX)
             for(x <- it){
-                if(f(x) > maxV) maxV = f(x); maxX = x
+                if(f(x) > maxV){ maxV = f(x); maxX = x }
             }
             (maxX, maxV)
         }

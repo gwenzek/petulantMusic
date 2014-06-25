@@ -200,6 +200,12 @@ class NeuralNetwork(
         output.close()
         println("Neural network saved to : " + outputRule(niter))
     }
+
+    def visualizeAllHiddenLayers(width: Int, height:Int){
+        for (i <- 0 until theta1.rows) {
+            NeuralNetwork.visualizeHiddenLayer(theta1, width, height, i)
+        }
+    }
 }
 
 object NeuralNetwork{
@@ -210,12 +216,6 @@ object NeuralNetwork{
         val mat = rowData.reshape(width, height)
         val f = Figure()
         f.subplot(0) += image(mat)
-    }
-
-    def visualizeAllHiddenLayers(nn: NeuralNetwork, width: Int, height:Int){
-        for (i <- 0 until nn.theta1.rows) {
-            visualizeHiddenLayer(nn.theta1, width, height, i)
-        }
     }
 
     def visualizeInput(f: Figure, x: DenseVector[Double], width: Int, height: Int) {
@@ -266,10 +266,10 @@ object NeuralNetwork{
         val lastLine = 50
         val xtl = DataLoader.load("data",
             width, height, firstLine, lastLine,
-            _.isNote, _.duration).filter(_._1.length == width*height).toList
+            _.isNote, _.simpleCat).filter(_._1.length == width*height).toList
         // xtl.foreach(xt => print(s"${xt._2} "))
         // println()
-        val nn = new NeuralNetwork(width * height, hidden, Note.durationDescription.length)
+        val nn = new NeuralNetwork(width * height, hidden, Symbol.simpleCatNumber)
         nn.train(xtl, 200, 10)
         // for (i <- 0 until nn.theta1.rows) {
         //     visualizeHiddenLayer(nn.theta1, width, height, i)
