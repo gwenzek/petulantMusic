@@ -4,7 +4,6 @@ import breeze.linalg.DenseMatrix
 import breeze.plot._
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.ScaleMethod.Bicubic
-import com.sksamuel.scrimage.Color //yeah !
 import impl.MatrixConversion.{binaryToMatrix, imageToBinary, imageToMatrix}
 
 class BinaryImage(val data: DenseMatrix[Int]){
@@ -86,11 +85,11 @@ object BinaryImage{
 
     def centerOnLines(img: Image, width: Int, height: Int, firstLine: Int, lastLine: Int) : Image = {
         val xys = img.findLines().toArray
-        if(xys.length < 4) return img scaleTo(width, height)
+        if(xys.length < 4) return img.scaleTo(width, height)
         var first : Int = xys(0)._2
         val last : Int = xys(3)._2
         val a : Double = (firstLine - lastLine).toDouble / (first - last)
-        var shrinked : Image = img scaleTo(width, (img.height.toDouble*a).toInt)
+        var shrinked : Image = img.scaleTo(width, (img.height.toDouble*a).toInt)
         val f = new Figure("shrinked", 2, 2)
         // first -> a*first
         first = (a*first).toInt

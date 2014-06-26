@@ -74,7 +74,6 @@ object TestWindowScala extends App {
               case e: IOException => "saving failed"
             }
         }
-        // zoomLabel.setText(durationComboBox.getSelectedItem.toString + ' ' + message)
     }
 
 }

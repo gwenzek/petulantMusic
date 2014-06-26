@@ -15,7 +15,7 @@ abstract class Symbol {
             (if(n.pointed) '*' else '_')
         case c: Cle => "Cle;" + Symbol.noteDescription(c.note) + ";_;_;_;_"
         case s: Silence => "Silence;_;_;_;" +Symbol.durationDescription(s.duration)+";_"
-        case a: Annotation => "Annotation;${a.getNote};${a.getLevel};"
+        case a: Annotation => s"Annotation;${a.getNote};${a.getLevel};"
     }
 
     def simpleCat = this match {
@@ -25,31 +25,11 @@ abstract class Symbol {
         case Annotation(_, _) => 7
         case _ => 0
     }
-
-    // def cat = this match {
-    //     case Nothing => "Nothing"
-    //     case _: Note => "Note"
-    //     case _: Cle => "Cle"
-    //     case _: Silence => "Silence"
-    //     case _: Annotation => "Annotation"
-    // }
-    
+   
     def isNote = this match {
         case n: Note => true
         case _ => false
     }
-
-    // def level = this match {
-    //     case n: Note => n.getLevel
-    //     case a: Annotation => a.getLevel
-    //     case _ => "_"
-    // }
-
-    // def annotation = this match {
-    //     case n: Note => Symbol.annotationDescription(n.annotation)
-    //     case a: Annotation => a.getLevel
-    //     case _ => "_"
-    // }
 }
 
 object Symbol {

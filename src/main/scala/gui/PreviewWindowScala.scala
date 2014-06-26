@@ -51,7 +51,7 @@ object PreviewWindowScala extends App{
     val noteToolBar = new NoteToolBar
     previewWindow.add(noteToolBar, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 20), null, 0, false))
     
-    noteToolBar.okButton.addActionListener((e: ActionEvent) => {
+    noteToolBar.okButton.addActionListener(((e: ActionEvent)) => {
         if (imagePanel.saveSelected("img_" + counter.index, noteToolBar.getNote.toString)) 
             counter += 1
     })

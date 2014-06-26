@@ -16,6 +16,11 @@ object EasyUI{
             override def actionPerformed(e: ActionEvent) = f(e)
         }
 
+    // implicit def easyActionListener( f: Unit ) = 
+    //     new ActionListener() {
+    //         override def actionPerformed(e: ActionEvent) = f
+    //     }
+
     def gridLayout(x: Int, y: Int) = new GridLayoutManager(x, y, new Insets(0, 0, 0, 0), -1, -1)
 
     abstract class Layout{
@@ -93,5 +98,9 @@ object EasyUI{
         spinner.setValue(i)
     def setContent(checkBox: JCheckBox, b : Boolean) : Unit = 
         checkBox.setSelected(b)
+
+    def getContent(box: JComboBox[String]): String = box.getSelectedItem.toString
+    def getContent(spinner: JSpinner): Int = spinner.getValue.toString.toInt
+    def getContent(checkBox: JCheckBox): Boolean = checkBox.isSelected
 
 }

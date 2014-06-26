@@ -26,13 +26,13 @@ class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
         // val durations = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
         // durationNN.train(durations, 200, 10, (x: Int) => s"layers/duration_$x.txt")
         val simpleCat = load(trainingDirs, (n: Symbol) => true, _.simpleCat).toList
-        durationNN.train(simpleCat, 200, 10, (x: Int) => s"layers/duration_$x.txt")
-        durationNN.visualizeAllHiddenLayers(width, height)
+        durationNN.train(simpleCat, 400, 10, (x: Int) => s"layers/duration_$x.txt")
+        // durationNN.visualizeAllHiddenLayers(width, height)
     }
 
     def getPrediction(input: NoteBlock) : Symbol = {
-        // val centered: Image = BinaryImage.centerOnLines(input.img, width, height, firstLine, lastLine)
-        val x = castToVector(input.img.scaleTo(width, height))
+        val centered: Image = BinaryImage.centerOnLines(input.img, width, height, firstLine, lastLine)
+        val x = castToVector(centered.scaleTo(width, height))
         // val isSomething = somethingNN.getPredictedClass(x) > 0
         val y = Symbol.fromSimpleCat(durationNN.getPredictedClass(x))
         y match {
@@ -49,7 +49,7 @@ class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
         def desc_filter(img_desc: (String, String)) = noteFilter(Symbol.fromFile(img_desc._2))
         def desc_toInt(desc: String) = toInteger(Symbol.fromFile(desc))
 
-        for (img_desc <- DataManipulator.listImagesDescriptions(dirs).filter(desc_filter))
+        for (img_desc <- DataLoader.listImagesDescriptions(dirs).filter(desc_filter))
             yield (loadXFromFile(img_desc._1), desc_toInt(img_desc._2))
     }
 
@@ -92,5 +92,5 @@ object Pipeline {
             new NeuralNetwork(width*height, 10, 2),
             // new NeuralNetwork(width*height, 15, Symbol.durationDescription.length)
             new NeuralNetwork(width*height, 20, Symbol.simpleCatNumber)
-        ) }   
+        ) }
 }

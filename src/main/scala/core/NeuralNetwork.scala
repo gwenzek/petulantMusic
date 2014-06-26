@@ -12,7 +12,7 @@ import java.util.Scanner
  */
 class NeuralNetwork(
         val layers: List[DenseMatrix[Double]], 
-        val learningRate: Double = 1.0,
+        val learningRate: Double = 0.5,
         val regularisationFactor: Double = 0.1){
 
     val theta1 = layers(0)
@@ -177,7 +177,7 @@ class NeuralNetwork(
             if (i % checkFrequency == 0) {
                 println(s"Iteration $i, classification cost: ${classificationCost(xtl, size)}," +
                         s"regularisation cost: ${regularisationCost}")
-                println(s"Accuracy : ${accuracy(xtl)}")
+                println(s"Accuracy : ${accuracy(xtl, size)}")
                 println("Confusion matrix:")
                 println(confusionMatrix(xtl))
                 dumpToFile(i, outputRule)

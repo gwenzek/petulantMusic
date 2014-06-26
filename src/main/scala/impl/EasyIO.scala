@@ -20,11 +20,12 @@ object EasyIO{
         }
     }
 
-    class FileCounter(dir: String){
+    case class FileCounter(dir: String){
         val counter = dir+'/'+".counter"
         def index() : Int = 
             try{ Source.fromFile(counter).getLines.next.toInt }
             catch{ case e: java.io.FileNotFoundException => 0 }
         def +=(i: Int) = counter <<| (index + i).toString
+        def getFile(prefix: String) = dir+'/'+prefix+'_'+index
     }
 }

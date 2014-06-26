@@ -1,6 +1,14 @@
 package impl
 
 object EasyMath{
+
+    private def iter4Ever[T](f: () => Option[T]) = new Iterator[Option[T]]{
+        def next() = f()
+        val hasNext = true
+    }
+
+    def iterUntilNone[T](f: () => Option[T]) = iter4Ever(f).takeWhile(!_.isEmpty).map(_.get)
+
     implicit class EasyIterable[A](elements: Iterable[A]){
         def minArgValue[B <% Ordered[B]](f: A => B) = {
             val it = elements.toIterator

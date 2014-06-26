@@ -1,13 +1,13 @@
 package gui
 
-import com.sksamuel.scrimage.{Image, X11Colorlist}
+import com.sksamuel.scrimage.Image
 import java.awt._
 import java.awt.event.ActionEvent
-import java.io.IOException
+import java.io.File
 import javax.swing._
 import impl.EasyUI._
+import impl.EasyIO.FileCounter
 import core.Pipeline
-import java.io.File
 import core.NoteFinder.NoteBlock
 
 
@@ -22,7 +22,7 @@ object Demo extends App {
     mainWindow.add(loadToolBar, Horizontal(30)(0, 0, 1, 2))
     val noteToolBar = new NoteToolBar 
     mainWindow.add(noteToolBar, Horizontal(30)(2, 0, 1, 2))
-
+    noteToolBar.okButton.addActionListener((e: ActionEvent) => saveImgAndNote)
     var navigator = new ImagesNavigator(onNewNote)
     mainWindow.add(navigator, Vertical(100)(1, 1))
 
@@ -39,57 +39,17 @@ object Demo extends App {
         noteToolBar.setNote(predicted)
     }
 
+    val counter = FileCounter("collected")
+    def saveImgAndNote() = {
+        navigator.dumpSelected(counter.getFile("img"))
+        noteToolBar.dumpSelected(counter.getFile("img"))
+        counter += 1
+    }
+
     val frame: JFrame = new JFrame("TestWindow")
     frame.setContentPane(mainWindow)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()
     frame.setVisible(true)
 
-}
-
-class ImagesNavigator(val onNew : NoteBlock => Unit) extends JPanel {
-    var it = Iterator[NoteBlock]()
-
-    this.setLayout(gridLayout(2, 1))
-
-    val zoomPanel = new ZoomPanel(100, 200)
-    this.add(zoomPanel, FillBoth(0, 0))
-    val toolBar = new JToolBar
-
-    this.add(toolBar, Horizontal(30)(1, 0))
-    val nextButton = new JButton
-    nextButton.setText("Next")
-    nextButton.addActionListener((e: ActionEvent) => loadNext)
-    toolBar.add(nextButton)
-
-    def loadNext : Unit = {
-        println("next")
-        if(it.hasNext){
-            val note = it.next 
-            zoomPanel.load(note.img)
-            onNew(note)
-        } else {
-            zoomPanel.load(zoomPanel.default)
-        }
-    }
-
-    def loadNotes(notes : Iterable[NoteBlock]){ it = notes.toIterator }
-}
-
-class ZoomPanel(val w: Int, val h: Int) extends JPanel {
-    this.setSize(w, h)
-    private var img = default
-
-    def default = Image.filled(w, h, X11Colorlist.Blue)
-
-    def load(img: Image){
-        this.img = img.fit(w, h)
-        this.repaint()
-    }
-
-    override def paintComponent(g : Graphics) {
-        this.setSize(w, h)
-        super.paintComponent(g)
-        g.drawImage(img.awt, 0, 0, null)
-    }
 }
