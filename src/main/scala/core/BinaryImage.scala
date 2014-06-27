@@ -4,7 +4,7 @@ import breeze.linalg.DenseMatrix
 import breeze.plot._
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.ScaleMethod.Bicubic
-import impl.MatrixConversion.{binaryToMatrix, imageToBinary, imageToMatrix}
+import impl.MatrixConversion.{binaryToMatrix, imageToBinary, imageToNMatrix}
 
 class BinaryImage(val data: DenseMatrix[Int]){
 

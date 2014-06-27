@@ -18,8 +18,8 @@ object TestWindowScala extends App {
     val testWindow = new JPanel
     testWindow.setLayout(gridLayout(3, 2))
 
-    // val pipeline = Pipeline.fromFile("layers/note_80.txt", "layers/duration_190.txt")
-    val pipeline = Pipeline.empty
+    val pipeline = Pipeline.fromFile("layers/simple_300.txt")
+    // val pipeline = Pipeline.empty
 
     private val panel1: JPanel = new JPanel
     panel1.setLayout(gridLayout(1, 1))

@@ -5,7 +5,7 @@ import java.io.File
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.sksamuel.scrimage.Image
 import com.sksamuel.scrimage.ScaleMethod.Bicubic
-import impl.MatrixConversion.imageToMatrix
+import impl.MatrixConversion.imageToNMatrix
 import scala.language.implicitConversions
 
 

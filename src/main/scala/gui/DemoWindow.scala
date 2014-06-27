@@ -15,6 +15,8 @@ object Demo extends App {
     val mainWindow = new JPanel
     mainWindow.setLayout(gridLayout(3, 2))
     val pipeline = Pipeline.empty
+    // val pipeline = Pipeline.fromFile("layers/simple_300.txt")
+    // val pipeline = Pipeline.fromFile("layers/duration_300.txt")
 
     val imagePanel = new ImagePanel
     mainWindow.add(imagePanel, FillBoth(1, 0))
@@ -46,7 +48,7 @@ object Demo extends App {
         counter += 1
     }
 
-    val frame: JFrame = new JFrame("TestWindow")
+    val frame: JFrame = new JFrame("Demo")
     frame.setContentPane(mainWindow)
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
     frame.pack()

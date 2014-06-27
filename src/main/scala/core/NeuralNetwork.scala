@@ -254,8 +254,8 @@ object NeuralNetwork{
 
     def main(args: Array[String]){
         println("main")
-        test_train
-        val nn = fromFile("layers/layers_200.txt")
+        // test_train
+        // val nn = fromFile("layers/layers_200.txt")
     }
 
     def test_train {

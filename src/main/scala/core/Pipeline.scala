@@ -4,36 +4,39 @@ import com.sksamuel.scrimage.{Image, X11Colorlist}
 // import java.awt.image.BufferedImage
 import java.io.File
 import breeze.linalg.{DenseVector, DenseMatrix}
-import impl.MatrixConversion.imageToMatrix
+import impl.MatrixConversion.imageToNMatrix
 import impl.EasyIO.{WriteAndClose, FileCounter}
 import core.NoteFinder.NoteBlock
 
-class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
-    val width = Pipeline.width
-    val height = Pipeline.height
-    private val firstLine = Pipeline.firstLine
-    private val lastLine = Pipeline.lastLine
+class Pipeline(val durationNN: NeuralNetwork) {
+    import Pipeline._
+    // val width = Pipeline.width
+    // val height = Pipeline.height
+    // private val firstLine = Pipeline.firstLine
+    // private val lastLine = Pipeline.lastLine
     private var img: Image = null
 
-    val trainingDirs = List("data", "nothing", "collected")
+    val trainingDirs = List("data")
     val outputDir = "collected"
     val counter = new FileCounter(outputDir)
 
+    def feed(img: Image) = {
+        val centered = BinaryImage.centerOnLines(img, width, height, firstLine, lastLine)
+        this.img = centered.scaleTo(width, height)
+        // castToVector(wrap(imageToNMatrix(this.img)))
+        castToVector(imageToNMatrix(this.img))
+    }
+
     def train(){
-        // val categories = load(outputDir :: trainingDirs, (n: Symbol) => true, _.isSomething).toList
-        // somethingNN.train(categories, 100, 10, (x: Int) => s"layers/note_$x.txt")
-        // // NeuralNetwork.visualizeAllHiddenLayers(somethingNN, width, height)
         // val durations = load(outputDir :: trainingDirs, _.isNote, _.duration).toList
         // durationNN.train(durations, 200, 10, (x: Int) => s"layers/duration_$x.txt")
         val simpleCat = load(trainingDirs, (n: Symbol) => true, _.simpleCat).toList
-        durationNN.train(simpleCat, 400, 10, (x: Int) => s"layers/duration_$x.txt")
+        durationNN.train(simpleCat, 300, 10, (x: Int) => s"layers/simple_$x.txt")
         // durationNN.visualizeAllHiddenLayers(width, height)
     }
 
     def getPrediction(input: NoteBlock) : Symbol = {
-        val centered: Image = BinaryImage.centerOnLines(input.img, width, height, firstLine, lastLine)
-        val x = castToVector(centered.scaleTo(width, height))
-        // val isSomething = somethingNN.getPredictedClass(x) > 0
+        val x = feed(input.img)
         val y = Symbol.fromSimpleCat(durationNN.getPredictedClass(x))
         y match {
             case n: Note => Note(input.level, n.duration, n.annotation, n.pointed)
@@ -54,7 +57,17 @@ class Pipeline(val somethingNN: NeuralNetwork, val durationNN: NeuralNetwork) {
     }
 
     private def loadXFromFile(img: String) : DenseVector[Double] = {
-        castToVector(BinaryImage.centerOnLines(Image(new File(img)), width, height, firstLine, lastLine))
+        feed(Image(new File(img)))
+    }
+
+    def wrap(img: DenseMatrix[Double]) = {
+        val h = img.cols / 10
+        val wrapped = img.copy
+        for(i <- 1 to 9){
+            wrapped(::, i*h until img.cols) += img(::, 0 until img.cols - i*h)
+        }
+        wrapped :* 0.1
+        wrapped
     }
 
     private def castToVector[T](matrix: DenseMatrix[T]) = new DenseVector[T](matrix.data)
@@ -85,12 +98,10 @@ object Pipeline {
     private val firstLine = 30
     private val lastLine = 50
 
-    def fromFile(noteLayers: String, durationLayers: String) = 
-        new Pipeline(NeuralNetwork.fromFile(noteLayers), NeuralNetwork.fromFile(durationLayers))
+    def fromFile(durationLayers: String) = 
+        new Pipeline(NeuralNetwork.fromFile(durationLayers))
 
-    def empty() = { new Pipeline(
-            new NeuralNetwork(width*height, 10, 2),
-            // new NeuralNetwork(width*height, 15, Symbol.durationDescription.length)
+    def empty() = new Pipeline(
             new NeuralNetwork(width*height, 20, Symbol.simpleCatNumber)
-        ) }
+        )
 }
